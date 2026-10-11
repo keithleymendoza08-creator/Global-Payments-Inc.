@@ -852,7 +852,7 @@
     </div>
 </div>
 
-<!-- GLOBAL PAYMENTS LOANS & PAYSLIP DEDUCTIONS MODAL -->
+<!-- GLOBAL PAYMENTS LOANS & DYNAMIC STATUTORY DEDUCTIONS MODAL -->
 <div class="modal fade" id="loansModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -862,25 +862,36 @@
             </div>
             <div class="modal-body p-4">
                 
-                <!-- TOP SECTION: DEDUCTIONS SUMMARY -->
-                <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-text me-1"></i>Pre-Tax Statutory Deductions</h6>
+                <!-- TOP SECTION: DYNAMIC STATUTORY DEDUCTIONS BASED ON DAILY RATE -->
+                <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-text me-1"></i>Pre-Tax Statutory Contributions (Computed from Daily Rate: ₱ {{ user.daily_rate if user.daily_rate else '0.00' }})</h6>
                 <div class="row g-3 mb-4 text-center">
                     <div class="col-md-4">
                         <div class="p-3 border rounded bg-light">
                             <span class="small text-muted d-block fw-bold">HDMF EE Contribution</span>
-                            <span class="fs-5 fw-bold text-dark">₱ {{ user.hdmf_contrib if user.hdmf_contrib else '200.00' }}</span>
+                            <span class="fs-5 fw-bold text-dark">
+                                {% set monthly = (user.daily_rate | float) * 22 %}
+                                {% set hdmf = monthly * 0.02 %}
+                                ₱ {{ "%.2f"|format(hdmf if hdmf < 200 else 200.0) }}
+                            </span>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 border rounded bg-light">
                             <span class="small text-muted d-block fw-bold">PHILHEALTH EE Contribution</span>
-                            <span class="fs-5 fw-bold text-dark">₱ {{ user.philhealth_contrib if user.philhealth_contrib else '376.46' }}</span>
+                            <span class="fs-5 fw-bold text-dark">
+                                {% set monthly = (user.daily_rate | float) * 22 %}
+                                {% set ph = monthly * 0.025 %}
+                                ₱ {{ "%.2f"|format(ph if ph < 2250 else 2250.0) }}
+                            </span>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 border rounded bg-light">
                             <span class="small text-muted d-block fw-bold">SSS EE Contribution</span>
-                            <span class="fs-5 fw-bold text-dark">₱ {{ user.sss_contrib if user.sss_contrib else '250.00' }}</span>
+                            <span class="fs-5 fw-bold text-dark">
+                                {% set monthly = (user.daily_rate | float) * 22 %}
+                                ₱ {{ '1,350.00' if monthly >= 29750 else '250.00' }}
+                            </span>
                         </div>
                     </div>
                 </div>
