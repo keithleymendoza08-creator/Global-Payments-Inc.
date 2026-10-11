@@ -180,7 +180,13 @@ def register():
                 shift_start, shift_end, work_location
             ))
             db.commit()
-        flash("Employee account successfully created! You can now login.", "success")
+        
+        flash("Employee account successfully created!", "success")
+        
+        # Kung naka-login ang HR/Admin, ibalik sila sa Dashboard
+        if 'user_id' in session:
+            return redirect(url_for("dashboard"))
+            
         return redirect(url_for("login"))
     except Exception as e:
         print("Registration Error:", e)
@@ -548,6 +554,6 @@ def profile():
         stats = cur.fetchall() or []
     return render_template('profile.html', user=user, stats=stats)
 
-if __name__ == 'main__':
+if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)

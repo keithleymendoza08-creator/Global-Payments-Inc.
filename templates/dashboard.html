@@ -163,6 +163,12 @@
         border: 2px solid #22C55E;
     }
 
+    .calendar-cell.reg-holiday {
+        background-color: #FEE2E2 !important;
+        color: #991B1B !important;
+        border: 2px solid #EF4444;
+    }
+
     .calendar-cell.spec-holiday {
         background-color: #FEF3C7 !important;
         color: #92400E !important;
@@ -287,6 +293,7 @@
     <!-- MAIN LANDING CONTENT AREA -->
     <main class="main-dashboard-content">
         <div class="row g-4 mb-5">
+            <!-- CORPORATE PAYROLL HERO SECTION -->
             <div class="col-lg-8">
                 <div class="payroll-hero-card h-100" id="payroll-info">
                     <div class="row align-items-center g-4">
@@ -302,6 +309,9 @@
                             </p>
 
                             <h6 class="fw-bold mb-2" style="color: var(--gp-navy);">How Payroll Can Help You:</h6>
+                            <p class="text-muted small mb-3">We're available to assist with questions related to:</p>
+
+                            <!-- KUMPLETONG 7 BULLET POINTS -->
                             <ul class="list-unstyled mb-0 small">
                                 <li class="mb-2 d-flex align-items-start">
                                     <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
@@ -311,13 +321,33 @@
                                     <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
                                     <div><strong>Gross-to-Net Pay Processing:</strong> Ensuring your earnings, taxes, and deductions are calculated correctly.</div>
                                 </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
+                                    <div><strong>Approved Time & Payments:</strong> Processing EIS-approved hours, leaves, bonuses, and other pay elements.</div>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
+                                    <div><strong>Pay Calculations & Reconciliation:</strong> Verifying your pay reflects all approved time and payment items.</div>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
+                                    <div><strong>Garnishments & Wage Withholding:</strong> Managing court-ordered deductions from your pay.</div>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
+                                    <div><strong>Direct Deposit:</strong> Ensuring your paycheck is deposited correctly into your bank account.</div>
+                                </li>
+                                <li class="d-flex align-items-start">
+                                    <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
+                                    <div><strong>Tax Deductions & Payments:</strong> Withholding and remitting payroll taxes in compliance with regulations.</div>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- INTERACTIVE CALENDAR WIDGET -->
+            <!-- INTERACTIVE CALENDAR WIDGET WITH ALL 4 LEGENDS -->
             <div class="col-lg-4">
                 <div class="calendar-card h-100 d-flex flex-column justify-content-between">
                     <div>
@@ -337,6 +367,7 @@
                         </div>
                     </div>
 
+                    <!-- KUMPLETONG 4 COLOR LEGENDS -->
                     <div class="pt-2 border-top">
                         <div class="row g-2">
                             <div class="col-6">
@@ -347,8 +378,20 @@
                             </div>
                             <div class="col-6">
                                 <div class="calendar-legend-item">
+                                    <span class="legend-dot" style="background-color: #EF4444;"></span>
+                                    <span>Regular Holiday</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="calendar-legend-item">
                                     <span class="legend-dot" style="background-color: #F59E0B;"></span>
                                     <span>Special Non-Working</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="calendar-legend-item">
+                                    <span class="legend-dot" style="background-color: #0EA5E9;"></span>
+                                    <span>Approved Leave</span>
                                 </div>
                             </div>
                         </div>
@@ -384,6 +427,30 @@
                 <div class="module-summary-card">
                     <span class="module-num-badge">4</span><strong>Leave Application</strong>
                     <p class="small text-muted mb-0 mt-1">File leave type; validate available leave balance.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="module-summary-card">
+                    <span class="module-num-badge">5</span><strong>Multi-Level Approval</strong>
+                    <p class="small text-muted mb-0 mt-1">Supervisor endorses; HR approves and updates leave credits.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="module-summary-card">
+                    <span class="module-num-badge">6</span><strong>Payroll Cut-Off & Deductions</strong>
+                    <p class="small text-muted mb-0 mt-1">Aggregate work, overtime, tardiness, absences, and taxes.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="module-summary-card">
+                    <span class="module-num-badge">7</span><strong>Payroll Locking</strong>
+                    <p class="small text-muted mb-0 mt-1">HR audits totals and locks period against retroactive edits.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="module-summary-card">
+                    <span class="module-num-badge">8</span><strong>DTR & Payslip Printing</strong>
+                    <p class="small text-muted mb-0 mt-1">Generate employee and departmental payroll documents.</p>
                 </div>
             </div>
         </div>
@@ -494,7 +561,7 @@
     </div>
 </div>
 
-<!-- TARDINESS LEDGER MODAL (TINANGGAL NA SI IRISH KALINGA AT PLACEHOLDERS) -->
+<!-- TARDINESS LEDGER MODAL (CLEANED WITHOUT PLACEHOLDERS) -->
 <div class="modal fade" id="tardinessModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
