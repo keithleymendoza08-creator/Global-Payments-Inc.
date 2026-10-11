@@ -1,98 +1,350 @@
 {% extends "base.html" %}
 
-{% block title %}DTR & Reports - Global Payments HRIS{% endblock %}
+{% block title %}DTR & Printable Reports - Global Payments HRIS{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<style>
+    :root {
+        --gp-navy: #002B49;
+        --gp-blue: #0066B2;
+        --gp-accent: #00A3E0;
+    }
+
+    .report-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .report-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+    }
+
+    /* FORMAL PAYSLIP PAPER STYLING */
+    .payslip-paper {
+        background: #FFFFFF;
+        border: 1px solid #CBD5E1;
+        border-radius: 8px;
+        padding: 2.5rem;
+        color: #0F172A;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .payslip-header-table, .payslip-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .payslip-table th {
+        background-color: var(--gp-navy) !important;
+        color: #FFFFFF !important;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        padding: 8px 10px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .payslip-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #E2E8F0;
+        font-size: 0.85rem;
+    }
+
+    .payslip-section-title {
+        background-color: #F1F5F9 !important;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--gp-navy);
+        padding: 6px 10px;
+        border-left: 4px solid var(--gp-blue);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* --- STRICT PRINT ONLY RULES --- */
+    @media print {
+        /* Itago ang buong web layout, headers, navbar, at modals */
+        body * {
+            visibility: hidden !important;
+        }
+
+        /* Ipakita lamang ang mismong payslip document */
+        #printablePayslip, #printablePayslip * {
+            visibility: visible !important;
+        }
+
+        #printablePayslip {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .no-print, .btn, .modal-header, .modal-footer, .btn-close {
+            display: none !important;
+        }
+
+        /* Siguraduhing maayos ang kulay kapag ginawang PDF o print */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+</style>
+
+<div class="container py-4 no-print">
+    <!-- HEADER ACTION BAR -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-1" style="color: #002B49;"><i class="bi bi-file-earmark-spreadsheet me-2"></i>DTR & Printable Reports</h3>
-            <p class="text-muted small mb-0">Generate and view official Certificates of Daily Time Record, Payslips, and Master Payroll Registers.</p>
+            <h4 class="fw-bold mb-1" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-spreadsheet me-2"></i>DTR & Printable Reports</h4>
+            <p class="text-muted small mb-0">Generate and print official Certificates of Daily Time Record, Payslips, and Master Payroll Registers.</p>
         </div>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Back to Dashboard</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-3 fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
     </div>
 
-    <!-- Generated Printable Reports Cards -->
+    <!-- REPORT SELECTION CARDS -->
     <div class="row g-4 mb-5">
-        <!-- Option 1: Certificate of DTR -->
-        <div class="col-md-4">
-            <div class="card card-custom p-4 border-start border-4 border-danger h-100 shadow-sm">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h6 class="fw-bold mb-1">Certificate of Daily Time Record (DTR)</h6>
-                        <p class="text-muted small mb-0">Official record of daily shift timestamps and tardiness logs.</p>
+        <div class="col-md-6">
+            <div class="report-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-success">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="fw-bold text-dark mb-0">Itemized Employee Payslip</h5>
+                        <i class="bi bi-file-earmark-text fs-2 text-success"></i>
                     </div>
-                    <i class="bi bi-printer fs-3 text-danger"></i>
+                    <p class="text-muted small">Detailed gross pay, statutory deductions, and net compensation statement.</p>
                 </div>
-                <button class="btn btn-outline-danger btn-sm mt-auto w-100" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print / View DTR</button>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-success btn-sm rounded-3 flex-grow-1 fw-bold" data-bs-toggle="modal" data-bs-target="#viewPayslipModal">
+                        <i class="bi bi-eye me-1"></i> View & Print Payslip
+                    </button>
+                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-success btn-sm rounded-3">
+                        <i class="bi bi-download me-1"></i> CSV
+                    </a>
+                </div>
             </div>
         </div>
 
-        <!-- Option 2: Itemized Employee Payslip -->
-        <div class="col-md-4">
-            <div class="card card-custom p-4 border-start border-4 border-success h-100 shadow-sm">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h6 class="fw-bold mb-1">Itemized Employee Payslip</h6>
-                        <p class="text-muted small mb-0">Detailed gross pay, statutory deductions, and net compensation.</p>
+        <div class="col-md-6">
+            <div class="report-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-danger">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="fw-bold text-dark mb-0">Certificate of Daily Time Record (DTR)</h5>
+                        <i class="bi bi-printer fs-2 text-danger"></i>
                     </div>
-                    <i class="bi bi-file-earmark-pdf fs-3 text-success"></i>
+                    <p class="text-muted small">Official record of daily shift timestamps and tardiness logs.</p>
                 </div>
-                <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-success btn-sm mt-auto w-100"><i class="bi bi-download me-1"></i>Download CSV Payslip</a>
+                <button onclick="window.print()" class="btn btn-outline-danger btn-sm rounded-3 fw-bold mt-3">
+                    <i class="bi bi-printer me-1"></i> Print / View DTR
+                </button>
             </div>
         </div>
-
-        <!-- Option 3: Departmental Master Payroll Register -->
-        {% if session.get('role') in ['admin', 'hr_manager', 'hr'] %}
-        <div class="col-md-4">
-            <div class="card card-custom p-4 border-start border-4 border-primary h-100 shadow-sm">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h6 class="fw-bold mb-1">Departmental Master Payroll Register</h6>
-                        <p class="text-muted small mb-0">Comprehensive department-wide payroll audit statement.</p>
-                    </div>
-                    <i class="bi bi-shield-lock fs-3 text-primary"></i>
-                </div>
-                <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-primary btn-sm mt-auto w-100"><i class="bi bi-download me-1"></i>Download Master Register</a>
-            </div>
-        </div>
-        {% endif %}
     </div>
 
-    <!-- DTR Table Preview Log -->
-    <div class="card card-custom p-4 shadow-sm border-0">
-        <h5 class="fw-bold mb-3" style="color: #002B49;">Daily Time Record (DTR) Live Logs</h5>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle border text-center">
-                <thead class="table-light">
-                    <tr>
-                        <th>LOB / Location</th>
-                        <th>Employee ID</th>
-                        <th>Name</th>
-                        <th>Shift Start</th>
-                        <th>Clock-In Timestamp</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if timekeeping_records %}
-                        {% for t in timekeeping_records %}
+    <!-- DAILY TIME RECORD LOGS -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-clock-history me-2"></i>Daily Time Record (DTR) Live Logs</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center mb-0 small">
+                    <thead class="table-light">
                         <tr>
-                            <td>{{ t.lob if t.lob else 'Cubao QC' }}</td>
-                            <td>{{ t.employee_id if t.employee_id else 'N/A' }}</td>
-                            <td class="fw-semibold">{{ t.fullname }}</td>
-                            <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
-                            <td class="fw-bold text-dark">{{ t.clock_in }}</td>
-                            <td><span class="badge bg-success">Recorded</span></td>
+                            <th>LOB / Location</th>
+                            <th>Employee ID</th>
+                            <th>Name</th>
+                            <th>Shift Start</th>
+                            <th>Clock-In Timestamp</th>
+                            <th>Status</th>
                         </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No timekeeping logs found for this period.</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% if timekeeping_records %}
+                            {% for t in timekeeping_records %}
+                            <tr>
+                                <td>{{ t.lob if t.lob else 'Cubao QC' }}</td>
+                                <td>{{ t.employee_id if t.employee_id else 'N/A' }}</td>
+                                <td class="fw-semibold">{{ t.fullname }}</td>
+                                <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
+                                <td class="text-danger fw-bold">{{ t.clock_in }}</td>
+                                <td><span class="badge bg-success">LOGGED</span></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No timekeeping logs found for this period.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ITEMIZED PAYSLIP MODAL & PRINT CONTAINER -->
+<div class="modal fade" id="viewPayslipModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white no-print" style="background-color: var(--gp-navy);">
+                <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Official Employee Payslip</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                
+                <!-- DEDICATED PRINTABLE PAYSLIP DOCUMENT -->
+                <div class="payslip-paper" id="printablePayslip">
+                    <!-- BRANDING HEADER -->
+                    <div class="row align-items-center mb-3 pb-3 border-bottom">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 38px; object-fit: contain;" class="me-2">
+                                <div>
+                                    <h5 class="fw-bold mb-0" style="color: var(--gp-navy);">Global Payments</h5>
+                                    <span class="text-muted small">Global Payments Asia-Pacific Philippines Inc.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h4 class="fw-bold text-uppercase mb-0" style="color: var(--gp-navy);">PAYSLIP</h4>
+                            <span class="badge bg-secondary">CONFIDENTIAL</span>
+                        </div>
+                    </div>
+
+                    <!-- EMPLOYEE DETAILS -->
+                    <div class="row g-3 mb-3 small">
+                        <div class="col-6 border-end">
+                            <table class="payslip-header-table">
+                                <tr><td class="text-muted">Employee Name:</td><td class="fw-bold">{{ user.fullname }}</td></tr>
+                                <tr><td class="text-muted">Job Title:</td><td class="fw-semibold">{{ user.job_title if user.job_title else 'Network Engineer' }}</td></tr>
+                                <tr><td class="text-muted">Employee ID:</td><td class="fw-semibold">{{ user.employee_id if user.employee_id else 'GP-88392' }}</td></tr>
+                                <tr><td class="text-muted">Department:</td><td class="fw-semibold">{{ user.department if user.department else 'Information Technology' }}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <table class="payslip-header-table">
+                                <tr><td class="text-muted">Employer:</td><td class="fw-semibold">Global Payments Philippines</td></tr>
+                                <tr><td class="text-muted">Work Location:</td><td class="fw-semibold">{{ user.work_location if user.work_location else 'Cubao, Quezon City' }}</td></tr>
+                                <tr><td class="text-muted">Daily Rate:</td><td class="fw-bold text-primary">₱ {{ user.daily_rate if user.daily_rate else '3,500.00' }}</td></tr>
+                                <tr><td class="text-muted">Pay Period:</td><td class="fw-semibold">Semi-Monthly (Oct 1 - Oct 15)</td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- COMPUTATION SUMMARY -->
+                    {% set monthly = (user.daily_rate | float) * 22 if user.daily_rate else 77000 %}
+                    {% set gross = (monthly / 2) %}
+                    {% set hdmf = 200.0 if (monthly * 0.02) >= 200 else (monthly * 0.02) %}
+                    {% set ph = 2250.0 if (monthly * 0.025) >= 2250 else (monthly * 0.025) %}
+                    {% set sss = 1350.0 if monthly >= 29750 else 250.0 %}
+                    {% set pre_tax = (hdmf/2) + (ph/2) + (sss/2) %}
+                    {% set ewa = 389.0 %}
+                    {% set net = gross - pre_tax - ewa %}
+
+                    <div class="row text-center bg-light p-3 rounded mb-3 border g-2 small">
+                        <div class="col-3">
+                            <span class="text-muted d-block">Gross Pay</span>
+                            <strong class="text-dark fs-6">₱ {{ "%.2f"|format(gross) }}</strong>
+                        </div>
+                        <div class="col-3">
+                            <span class="text-muted d-block">Pre-Tax Deductions</span>
+                            <strong class="text-danger fs-6">₱ {{ "%.2f"|format(pre_tax) }}</strong>
+                        </div>
+                        <div class="col-3">
+                            <span class="text-muted d-block">Loans & EWA</span>
+                            <strong class="text-danger fs-6">₱ {{ "%.2f"|format(ewa) }}</strong>
+                        </div>
+                        <div class="col-3 border-start">
+                            <span class="text-muted d-block fw-bold">Net Compensation</span>
+                            <strong class="text-success fs-5">₱ {{ "%.2f"|format(net) }}</strong>
+                        </div>
+                    </div>
+
+                    <!-- ITEMIZED TABLES -->
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="payslip-section-title mb-2">EARNINGS & ALLOWANCES</div>
+                            <table class="payslip-table">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Basic Pay (Semi-Monthly)</td>
+                                        <td class="text-end fw-semibold">₱ {{ "%.2f"|format(gross) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rice Subsidy Allowance</td>
+                                        <td class="text-end fw-semibold">₱ 692.31</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Meal Allowance (Non-Taxable)</td>
+                                        <td class="text-end fw-semibold">₱ 100.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Night Differential (ND) Pay</td>
+                                        <td class="text-end fw-semibold">₱ 351.50</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="payslip-section-title mb-2">STATUTORY & OTHER DEDUCTIONS</div>
+                            <table class="payslip-table">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>HDMF / Pag-IBIG Contribution</td>
+                                        <td class="text-end text-danger">₱ {{ "%.2f"|format(hdmf/2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PhilHealth EE Contribution</td>
+                                        <td class="text-end text-danger">₱ {{ "%.2f"|format(ph/2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>SSS EE Contribution</td>
+                                        <td class="text-end text-danger">₱ {{ "%.2f"|format(sss/2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PayWatch EWA / Loan Deduction</td>
+                                        <td class="text-end text-danger">₱ {{ "%.2f"|format(ewa) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="mt-4 pt-3 border-top text-center text-muted" style="font-size: 0.75rem;">
+                        This is an official system-generated payslip from Global Payments HRIS. No signature required.
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-light d-flex justify-content-between no-print">
+                <button type="button" onclick="window.print()" class="btn btn-success btn-sm rounded-3 fw-bold">
+                    <i class="bi bi-printer me-1"></i> Print / Save as PDF
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
