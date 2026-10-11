@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}DTR & Reports - Global Payments HRIS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1" style="color: #002B49;"><i class="bi bi-file-earmark-spreadsheet me-2"></i>DTR & Printable Reports</h3>
+            <p class="text-muted small mb-0">Generate and view official Certificates of Daily Time Record, Payslips, and Master Payroll Registers.</p>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Back to Dashboard</a>
+    </div>
+
+    <!-- Generated Printable Reports Cards -->
+    <div class="row g-4 mb-5">
+        <!-- Option 1: Certificate of DTR -->
+        <div class="col-md-4">
+            <div class="card card-custom p-4 border-start border-4 border-danger h-100 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">Certificate of Daily Time Record (DTR)</h6>
+                        <p class="text-muted small mb-0">Official record of daily shift timestamps and tardiness logs.</p>
+                    </div>
+                    <i class="bi bi-printer fs-3 text-danger"></i>
+                </div>
+                <button class="btn btn-outline-danger btn-sm mt-auto w-100" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print / View DTR</button>
+            </div>
+        </div>
+
+        <!-- Option 2: Itemized Employee Payslip -->
+        <div class="col-md-4">
+            <div class="card card-custom p-4 border-start border-4 border-success h-100 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">Itemized Employee Payslip</h6>
+                        <p class="text-muted small mb-0">Detailed gross pay, statutory deductions, and net compensation.</p>
+                    </div>
+                    <i class="bi bi-file-earmark-pdf fs-3 text-success"></i>
+                </div>
+                <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-success btn-sm mt-auto w-100"><i class="bi bi-download me-1"></i>Download CSV Payslip</a>
+            </div>
+        </div>
+
+        <!-- Option 3: Departmental Master Payroll Register -->
+        {% if session.get('role') in ['admin', 'hr_manager', 'hr'] %}
+        <div class="col-md-4">
+            <div class="card card-custom p-4 border-start border-4 border-primary h-100 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">Departmental Master Payroll Register</h6>
+                        <p class="text-muted small mb-0">Comprehensive department-wide payroll audit statement.</p>
+                    </div>
+                    <i class="bi bi-shield-lock fs-3 text-primary"></i>
+                </div>
+                <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-primary btn-sm mt-auto w-100"><i class="bi bi-download me-1"></i>Download Master Register</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- DTR Table Preview Log -->
+    <div class="card card-custom p-4 shadow-sm border-0">
+        <h5 class="fw-bold mb-3" style="color: #002B49;">Daily Time Record (DTR) Live Logs</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle border text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>LOB / Location</th>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Shift Start</th>
+                        <th>Clock-In Timestamp</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if timekeeping_records %}
+                        {% for t in timekeeping_records %}
+                        <tr>
+                            <td>{{ t.lob if t.lob else 'Cubao QC' }}</td>
+                            <td>{{ t.employee_id if t.employee_id else 'N/A' }}</td>
+                            <td class="fw-semibold">{{ t.fullname }}</td>
+                            <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
+                            <td class="fw-bold text-dark">{{ t.clock_in }}</td>
+                            <td><span class="badge bg-success">Recorded</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No timekeeping logs found for this period.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

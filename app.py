@@ -378,14 +378,19 @@ def reports():
         return redirect('/login')
     
     db = get_db()
-    with db.cursor() as cur:
-        cur.execute("""
-            SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
-            FROM timekeeping t
-            JOIN users u ON u.id=t.user_id
-            ORDER BY t.clock_in DESC
-        """)
-        timekeeping_records = cur.fetchall() or []
+    timekeeping_records = []
+    try:
+        with db.cursor() as cur:
+            cur.execute("""
+                SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
+                FROM timekeeping t
+                JOIN users u ON u.id=t.user_id
+                ORDER BY t.clock_in DESC
+            """)
+            timekeeping_records = cur.fetchall() or []
+    except Exception as e:
+        print("Reports Route Error:", e)
+        timekeeping_records = []
         
     return render_template('reports.html', timekeeping_records=timekeeping_records)
 
@@ -543,6 +548,6 @@ def profile():
         stats = cur.fetchall() or []
     return render_template('profile.html', user=user, stats=stats)
 
-if __name__ == '__main__':
+if __name__ == 'main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
