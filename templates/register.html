@@ -38,7 +38,6 @@
                         <input type="text" name="job_title" class="form-control" required placeholder="Software Engineer">
                     </div>
 
-                    <!-- MGA BAGONG FIELDS -->
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Daily Rate (PHP)</label>
                         <input type="number" step="0.01" name="daily_rate" class="form-control" placeholder="1200.00" required>
@@ -68,6 +67,41 @@
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Shift End</label>
                         <input type="time" name="shift_end" class="form-control" value="18:00" required>
+                    </div>
+
+                    <!-- REST DAYS CHECKBOXES -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Rest Days</label>
+                        <div class="d-flex flex-wrap gap-3 p-2 border rounded bg-light">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Monday" id="rest_mon">
+                                <label class="form-check-label" for="rest_mon">Monday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Tuesday" id="rest_tue">
+                                <label class="form-check-label" for="rest_tue">Tuesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Wednesday" id="rest_wed">
+                                <label class="form-check-label" for="rest_wed">Wednesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Thursday" id="rest_thu">
+                                <label class="form-check-label" for="rest_thu">Thursday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Friday" id="rest_fri">
+                                <label class="form-check-label" for="rest_fri">Friday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Saturday" id="rest_sat" checked>
+                                <label class="form-check-label" for="rest_sat">Saturday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Sunday" id="rest_sun" checked>
+                                <label class="form-check-label" for="rest_sun">Sunday</label>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Work Location -->

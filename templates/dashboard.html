@@ -181,6 +181,12 @@
         border: 2px solid #0EA5E9;
     }
 
+    .calendar-cell.rest-day {
+        background-color: #E2E8F0 !important;
+        color: #475569 !important;
+        border: 2px dashed #94A3B8;
+    }
+
     .calendar-legend-item {
         font-size: 0.78rem;
         display: flex;
@@ -363,7 +369,7 @@
                             <span class="badge bg-light text-dark border fw-semibold" id="calendarMonthLabel">{{ current_month_year }}</span>
                         </div>
 
-                        <div class="calendar-grid mb-3" id="calendarDaysContainer">
+                        <div class="calendar-grid mb-3" id="calendarDaysContainer" data-rest-days="{{ user.rest_days if user.rest_days else 'Saturday,Sunday' }}">
                             <div class="calendar-day-header">Su</div>
                             <div class="calendar-day-header">Mo</div>
                             <div class="calendar-day-header">Tu</div>
@@ -406,8 +412,8 @@
                             </div>
                             <div class="col-6">
                                 <div class="calendar-legend-item">
-                                    <span class="legend-dot" style="background-color: #EF4444;"></span>
-                                    <span>Regular Holiday</span>
+                                    <span class="legend-dot" style="background-color: #94A3B8;"></span>
+                                    <span>Rest Day / Off</span>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -532,6 +538,10 @@
                         <span class="fw-semibold text-dark">{{ user.shift_start }} - {{ user.shift_end }}</span>
                     </div>
                     <div class="col-md-6">
+                        <label class="small text-muted d-block">Rest Days</label>
+                        <span class="fw-semibold text-dark badge bg-secondary">{{ user.rest_days if user.rest_days else 'Saturday, Sunday' }}</span>
+                    </div>
+                    <div class="col-md-6">
                         <label class="small text-muted d-block">Work Location</label>
                         <span class="fw-semibold text-dark">{{ user.work_location if user.work_location else 'Cubao Quezon City' }}</span>
                     </div>
@@ -579,6 +589,39 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Shift End</label>
                             <input type="time" name="shift_end" class="form-control" value="18:00" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Rest Days</label>
+                        <div class="d-flex flex-wrap gap-3 p-2 border rounded bg-light">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Monday" id="edit_rest_mon">
+                                <label class="form-check-label" for="edit_rest_mon">Monday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Tuesday" id="edit_rest_tue">
+                                <label class="form-check-label" for="edit_rest_tue">Tuesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Wednesday" id="edit_rest_wed">
+                                <label class="form-check-label" for="edit_rest_wed">Wednesday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Thursday" id="edit_rest_thu">
+                                <label class="form-check-label" for="edit_rest_thu">Thursday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Friday" id="edit_rest_fri">
+                                <label class="form-check-label" for="edit_rest_fri">Friday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Saturday" id="edit_rest_sat" checked>
+                                <label class="form-check-label" for="edit_rest_sat">Saturday</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="Sunday" id="edit_rest_sun" checked>
+                                <label class="form-check-label" for="edit_rest_sun">Sunday</label>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -859,11 +902,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!calendarContainer) return;
 
     const year = 2026;
-    const month = 9; 
+    const month = 9; // October (0-indexed)
 
     const paydays = [15, 30];
     const specialHolidays = [31]; 
     const approvedLeaves = []; 
+
+    // Kunin ang rest days mula sa attribute ng container (e.g. "Saturday,Sunday")
+    const restDaysAttr = calendarContainer.getAttribute('data-rest-days') || '';
+    const restDaysArray = restDaysAttr.split(',').map(d => d.trim().toLowerCase());
+
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -885,10 +934,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-        path = document.createElement('div');
         const dayCell = document.createElement('div');
         dayCell.className = 'calendar-cell';
         dayCell.textContent = day;
+
+        const currentDate = new Date(year, month, day);
+        const dayOfWeekName = dayNames[currentDate.getDay()];
 
         if (paydays.includes(day)) {
             dayCell.classList.add('payday');
@@ -896,9 +947,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (specialHolidays.includes(day)) {
             dayCell.classList.add('spec-holiday');
             dayCell.title = "Special Non-Working Day (Undas Prep)";
-        } else if (approvedLeaves.includes(day)) {
-            dayCell.classList.add('leave-day');
-            dayCell.title = "Approved Leave";
+        } else if (restDaysArray.includes(dayOfWeekName)) {
+            dayCell.classList.add('rest-day');
+            dayCell.title = "Rest Day";
         }
 
         calendarContainer.appendChild(dayCell);

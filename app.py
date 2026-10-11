@@ -154,6 +154,10 @@ def register():
     shift_start = request.form.get('shift_start', '09:00').strip()
     shift_end = request.form.get('shift_end', '18:00').strip()
     work_location = request.form.get('work_location', 'Cubao Quezon City').strip()
+    
+    # Rest Days handling
+    rest_days_list = request.form.getlist('rest_days')
+    rest_days = ", ".join(rest_days_list) if rest_days_list else "Saturday,Sunday"
 
     if len(password) < 8:
         flash('Password must be at least 8 characters', 'danger')
@@ -171,15 +175,15 @@ def register():
                     employee_id, fullname, email, password, role, 
                     job_title, department, daily_rate, personal_number, 
                     hire_date, country, personal_address, 
-                    shift_start, shift_end, work_location
+                    shift_start, shift_end, rest_days, work_location
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 employee_id, fullname, email,
                 generate_password_hash(password), role,
                 job_title, department, daily_rate, personal_number,
                 hire_date, country, personal_address,
-                shift_start, shift_end, work_location
+                shift_start, shift_end, rest_days, work_location
             ))
             db.commit()
         
@@ -405,10 +409,10 @@ def assign_shift():
     user_id = request.form.get('user_id')
     shift_start = request.form.get('shift_start')
     shift_end = request.form.get('shift_end')
-    rest_days = request.form.getlist('rest_days')
+    rest_days_list = request.form.getlist('rest_days')
     work_location = request.form.get('work_location', 'Cubao Quezon City')
 
-    rest_days_str = ",".join(rest_days) if rest_days else "Saturday,Sunday"
+    rest_days_str = ", ".join(rest_days_list) if rest_days_list else "Saturday,Sunday"
 
     db = get_db()
     try:
