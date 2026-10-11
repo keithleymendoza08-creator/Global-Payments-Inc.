@@ -246,6 +246,11 @@
                 </a>
             </li>
             <li>
+                <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#loansModal">
+                    <i class="bi bi-credit-card"></i> Loans & Deductions
+                </a>
+            </li>
+            <li>
                 <a href="{{ url_for('reports') }}" class="sidebar-link">
                     <i class="bi bi-file-earmark-spreadsheet"></i> DTR & Reports
                 </a>
@@ -274,6 +279,11 @@
             <li>
                 <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#leaveModal">
                     <i class="bi bi-calendar-check"></i> Leave Application
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#loansModal">
+                    <i class="bi bi-credit-card"></i> Loans & Deductions
                 </a>
             </li>
             <li>
@@ -319,7 +329,7 @@
                         <div class="col-lg-8">
                             <h3 class="fw-bold mb-3" style="color: var(--gp-navy);">What Does Corporate Payroll Do?</h3>
                             <p class="text-secondary fs-6 leading-relaxed mb-4">
-                                Payroll is responsible for ensuring all employees are paid accurately and on time. We manage and process pay, from approved time reporting to final paycheck delivery, while ensuring compliance with tax and legal requirements.
+                                Payroll is responsible for ensuring all Global Payments employees are paid accurately and on time. We manage and process pay, from approved time reporting to final paycheck delivery, while ensuring compliance with tax and legal requirements.
                             </p>
 
                             <h6 class="fw-bold mb-2" style="color: var(--gp-navy);">How Payroll Can Help You:</h6>
@@ -332,19 +342,19 @@
                                 </li>
                                 <li class="mb-2 d-flex align-items-start">
                                     <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
-                                    <div><strong>Gross-to-Net Pay Processing:</strong> Ensuring your earnings, taxes, and deductions are calculated correctly.</div>
+                                    <div><strong>Gross-to-Net Pay Processing:</strong> Ensuring your earnings, statutory contributions, and deductions are calculated correctly.</div>
                                 </li>
                                 <li class="mb-2 d-flex align-items-start">
                                     <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
-                                    <div><strong>Approved Time & Payments:</strong> Processing EIS-approved hours, leaves, bonuses, and other pay elements.</div>
+                                    <div><strong>Approved Time & Payments:</strong> Processing EIS-approved hours, leaves, night diff, rice subsidies, bonuses, and other pay elements.</div>
                                 </li>
                                 <li class="mb-2 d-flex align-items-start">
                                     <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
-                                    <div><strong>Pay Calculations & Reconciliation:</strong> Verifying your pay reflects all approved time and payment items.</div>
+                                    <div><strong>Statutory & Company Loans:</strong> Managing SSS, HDMF/Pag-IBIG, and company loan repayments/EWA.</div>
                                 </li>
                                 <li class="mb-2 d-flex align-items-start">
                                     <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
-                                    <div><strong>Garnishments & Wage Withholding:</strong> Managing court-ordered deductions from your pay.</div>
+                                    <div><strong>Garnishments & Wage Withholding:</strong> Managing government-mandated deductions from your pay.</div>
                                 </li>
                                 <li class="mb-2 d-flex align-items-start">
                                     <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
@@ -412,8 +422,8 @@
                             </div>
                             <div class="col-6">
                                 <div class="calendar-legend-item">
-                                    <span class="legend-dot" style="background-color: #94A3B8;"></span>
-                                    <span>Rest Day / Off</span>
+                                    <span class="legend-dot" style="background-color: #EF4444;"></span>
+                                    <span>Regular Holiday</span>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -426,6 +436,12 @@
                                 <div class="calendar-legend-item">
                                     <span class="legend-dot" style="background-color: #0EA5E9;"></span>
                                     <span>Approved Leave</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="calendar-legend-item">
+                                    <span class="legend-dot" style="background-color: #94A3B8;"></span>
+                                    <span>Rest Day / Off</span>
                                 </div>
                             </div>
                         </div>
@@ -472,7 +488,7 @@
             <div class="col-md-6 col-lg-3">
                 <div class="module-summary-card">
                     <span class="module-num-badge">6</span><strong>Payroll Cut-Off & Deductions</strong>
-                    <p class="small text-muted mb-0 mt-1">Aggregate work, overtime, tardiness, absences, and taxes.</p>
+                    <p class="small text-muted mb-0 mt-1">Aggregate work, overtime, statutory deductions, loans, and taxes.</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
@@ -712,7 +728,7 @@
     </div>
 </div>
 
-<!-- UPDATED LEAVE APPLICATION & LEAVE BALANCE TRACKER MODAL -->
+<!-- LEAVE APPLICATION & STATUS HISTORY MODAL -->
 <div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -777,7 +793,7 @@
                         </form>
                     </div>
 
-                    <!-- KANAN: TABLE NG STATUS HISTORY -->
+                    <!-- KANAN: TABLE NG STATUS HISTORY NA MAY DELETE BUTTON -->
                     <div class="col-lg-7">
                         <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-clock-history me-1"></i>My Leave Status Ledger</h6>
                         <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
@@ -788,6 +804,7 @@
                                         <th>Dates</th>
                                         <th>Reason</th>
                                         <th>Status</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -806,17 +823,119 @@
                                                     <span class="badge bg-warning text-dark px-2 py-1">PENDING</span>
                                                 {% endif %}
                                             </td>
+                                            <td>
+                                                {% if l.status == 'Pending' %}
+                                                <form action="{{ url_for('delete_leave', id=l.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this leave request?');" style="display:inline;">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size: 0.75rem;">Delete</button>
+                                                </form>
+                                                {% else %}
+                                                <span class="text-muted" style="font-size: 0.75rem;">N/A</span>
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     {% else %}
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted py-4">No leave applications filed yet.</td>
+                                            <td colspan="5" class="text-center text-muted py-4">No leave applications filed yet.</td>
                                         </tr>
                                     {% endif %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GLOBAL PAYMENTS LOANS & PAYSLIP DEDUCTIONS MODAL -->
+<div class="modal fade" id="loansModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header text-white" style="background-color: var(--gp-navy);">
+                <h5 class="modal-title fw-bold"><i class="bi bi-credit-card me-2"></i>Global Payments - Loans, Statutory & Payslip Deductions</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- PRE-TAX STATUTORY DEDUCTIONS -->
+                <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-text me-1"></i>Pre-Tax Statutory Deductions</h6>
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="small text-muted d-block fw-bold">HDMF EE Contribution</span>
+                            <span class="fs-5 fw-bold text-dark">₱ {{ user.hdmf_contrib if user.hdmf_contrib else '200.00' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="small text-muted d-block fw-bold">PHILHEALTH EE Contribution</span>
+                            <span class="fs-5 fw-bold text-dark">₱ {{ user.philhealth_contrib if user.philhealth_contrib else '376.46' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="small text-muted d-block fw-bold">SSS EE Contribution</span>
+                            <span class="fs-5 fw-bold text-dark">₱ {{ user.sss_contrib if user.sss_contrib else '250.00' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATUTORY & COMPANY LOANS / AFTER-TAX DEDUCTIONS -->
+                <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-bank me-1"></i>Statutory Loans & After-Tax Deductions (PayWatch EWA)</h6>
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="small text-muted d-block fw-bold">Pag-IBIG / HDMF Loan</span>
+                            <span class="fs-5 fw-bold text-danger">₱ {{ user.hdmf_loan if user.hdmf_loan else '0.00' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="small text-muted d-block fw-bold">SSS Salary / Calamity Loan</span>
+                            <span class="fs-5 fw-bold text-danger">₱ {{ user.sss_loan if user.sss_loan else '0.00' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <span class="small text-muted d-block fw-bold">Company / PayWatch EWA Deduction</span>
+                            <span class="fs-5 fw-bold text-danger">₱ {{ user.company_loan if user.company_loan else '389.00' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EARNINGS & ALLOWANCES BREAKDOWN -->
+                <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-wallet2 me-1"></i>Special Earnings & Statutory Allowances</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Value / Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-semibold">Rice Subsidy Allowance</td>
+                                <td>Non-Taxable Allowance</td>
+                                <td class="text-success fw-bold">₱ 692.31</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Meal Allowance (Non-Taxable)</td>
+                                <td>Non-Taxable Allowance</td>
+                                <td class="text-success fw-bold">₱ 100.00</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Night Differential (ND) Work Day</td>
+                                <td>Statutory Differential Pay</td>
+                                <td class="text-success fw-bold">₱ 351.50</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="modal-footer bg-light">
@@ -905,11 +1024,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const month = 9; // October (0-indexed)
 
     const paydays = [15, 30];
+    const regularHolidays = []; 
     const specialHolidays = [31]; 
     const approvedLeaves = []; 
 
     // Kunin ang rest days mula sa attribute ng container (e.g. "Saturday,Sunday")
-    const restDaysAttr = calendarContainer.getAttribute('data-rest-days') || '';
+    const restDaysAttr = calendarContainer.getAttribute('data-rest-days') || 'Saturday,Sunday';
     const restDaysArray = restDaysAttr.split(',').map(d => d.trim().toLowerCase());
 
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -944,9 +1064,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (paydays.includes(day)) {
             dayCell.classList.add('payday');
             dayCell.title = "Payday";
+        } else if (regularHolidays.includes(day)) {
+            dayCell.classList.add('reg-holiday');
+            dayCell.title = "Regular Holiday";
         } else if (specialHolidays.includes(day)) {
             dayCell.classList.add('spec-holiday');
-            dayCell.title = "Special Non-Working Day (Undas Prep)";
+            dayCell.title = "Special Non-Working Day";
+        } else if (approvedLeaves.includes(day)) {
+            dayCell.classList.add('leave-day');
+            dayCell.title = "Approved Leave";
         } else if (restDaysArray.includes(dayOfWeekName)) {
             dayCell.classList.add('rest-day');
             dayCell.title = "Rest Day";

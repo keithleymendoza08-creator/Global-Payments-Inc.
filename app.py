@@ -65,7 +65,7 @@ def allowed_file(filename):
 hris.init_system()
 
 def migrate_users_table():
-    """Migrates schema to support detailed registration fields, shift assignments, and leave balances."""
+    """Migrates schema to support detailed registration fields, shift assignments, leave balances, and loans."""
     try:
         conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
         with conn.cursor() as cur:
@@ -89,6 +89,11 @@ def migrate_users_table():
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS vl_balance NUMERIC DEFAULT 15;")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS sl_balance NUMERIC DEFAULT 15;")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS el_balance NUMERIC DEFAULT 5;")
+
+            # --- LOANS & PAYROLL DEDUCTION FIELDS ---
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS hdmf_loan NUMERIC DEFAULT 0;")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS sss_loan NUMERIC DEFAULT 0;")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS company_loan NUMERIC DEFAULT 0;")
             
             conn.commit()
         conn.close()
@@ -466,6 +471,23 @@ def apply_leave():
         request.form['reason']
     )
     flash(msg, 'success' if ok else 'danger')
+    return redirect('/dashboard')
+
+@app.route('/leave/delete/<int:id>', methods=['POST'])
+def delete_leave(id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            cur.execute("DELETE FROM leave_applications WHERE id = %s AND user_id = %s AND status = 'Pending'", (id, session['user_id']))
+            db.commit()
+        flash('Leave application successfully deleted.', 'success')
+    except Exception as e:
+        print("Delete Leave Error:", e)
+        flash('Failed to delete leave application.', 'danger')
+        
     return redirect('/dashboard')
 
 @app.route('/admin/approve_leave/<int:id>')
