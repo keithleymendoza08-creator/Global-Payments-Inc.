@@ -89,18 +89,35 @@ def migrate_users_table():
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS vl_balance NUMERIC DEFAULT 15;")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS sl_balance NUMERIC DEFAULT 15;")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS el_balance NUMERIC DEFAULT 5;")
-
-            # --- LOANS & PAYROLL DEDUCTION FIELDS ---
-            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS hdmf_loan NUMERIC DEFAULT 0;")
-            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS sss_loan NUMERIC DEFAULT 0;")
-            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS company_loan NUMERIC DEFAULT 0;")
             
             conn.commit()
         conn.close()
     except Exception as e:
         print("Migration Warning:", e)
 
+def create_loans_table():
+    try:
+        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS loan_applications (
+                    id SERIAL PRIMARY KEY,
+                    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                    loan_type TEXT NOT NULL,
+                    amount NUMERIC NOT NULL,
+                    monthly_amortization NUMERIC NOT NULL,
+                    reason TEXT,
+                    status TEXT DEFAULT 'Pending',
+                    date_applied TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            conn.commit()
+        conn.close()
+    except Exception as e:
+        print("Loan Table Migration Error:", e)
+
 migrate_users_table()
+create_loans_table()
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -160,7 +177,6 @@ def register():
     shift_end = request.form.get('shift_end', '18:00').strip()
     work_location = request.form.get('work_location', 'Cubao Quezon City').strip()
     
-    # Rest Days handling
     rest_days_list = request.form.getlist('rest_days')
     rest_days = ", ".join(rest_days_list) if rest_days_list else "Saturday,Sunday"
 
@@ -333,6 +349,9 @@ def dashboard():
             cur.execute("SELECT * FROM leave_applications WHERE user_id=%s ORDER BY date_created DESC", (session['user_id'],))
             my_leaves = cur.fetchall() or []
 
+            cur.execute("SELECT * FROM loan_applications WHERE user_id=%s ORDER BY date_applied DESC", (session['user_id'],))
+            my_loans = cur.fetchall() or []
+
             cur.execute("""
                 SELECT l.*, u.fullname, u.department, u.job_title FROM leave_applications l
                 JOIN users u ON u.id=l.user_id
@@ -353,6 +372,7 @@ def dashboard():
             user=current_user,
             employees=employees, 
             my_leaves=my_leaves, 
+            my_loans=my_loans,
             pending_leaves=pending_leaves_list, 
             timekeeping_records=timekeeping_records, 
             total_employees=total_employees, 
@@ -374,6 +394,7 @@ def dashboard():
             user=fallback_user,
             employees=[], 
             my_leaves=[], 
+            my_loans=[],
             pending_leaves=[], 
             timekeeping_records=[], 
             total_employees=0, 
@@ -488,6 +509,31 @@ def delete_leave(id):
         print("Delete Leave Error:", e)
         flash('Failed to delete leave application.', 'danger')
         
+    return redirect('/dashboard')
+
+@app.route('/loan/apply', methods=['POST'])
+def apply_loan():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    loan_type = request.form.get('loan_type')
+    amount = request.form.get('amount', 0)
+    monthly_amortization = request.form.get('monthly_amortization', 0)
+    reason = request.form.get('reason', '')
+
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            cur.execute("""
+                INSERT INTO loan_applications (user_id, loan_type, amount, monthly_amortization, reason, status)
+                VALUES (%s, %s, %s, %s, %s, 'Pending')
+            """, (session['user_id'], loan_type, amount, monthly_amortization, reason))
+            db.commit()
+        flash('Loan application submitted successfully for HR approval.', 'success')
+    except Exception as e:
+        print("Apply Loan Error:", e)
+        flash('Failed to submit loan application.', 'danger')
+
     return redirect('/dashboard')
 
 @app.route('/admin/approve_leave/<int:id>')
