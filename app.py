@@ -411,20 +411,33 @@ def reports():
     
     db = get_db()
     timekeeping_records = []
+    current_user = None
+
     try:
         with db.cursor() as cur:
+            cur.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
+            current_user = cur.fetchone()
+
             cur.execute("""
                 SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
                 FROM timekeeping t
                 JOIN users u ON u.id=t.user_id
+                WHERE t.user_id=%s
                 ORDER BY t.clock_in DESC
-            """)
+            """, (session['user_id'],))
             timekeeping_records = cur.fetchall() or []
     except Exception as e:
         print("Reports Route Error:", e)
-        timekeeping_records = []
+        current_user = {
+            'fullname': session.get('fullname', 'Employee'),
+            'daily_rate': 3500
+        }
         
-    return render_template('reports.html', timekeeping_records=timekeeping_records)
+    return render_template(
+        'reports.html', 
+        user=current_user,
+        timekeeping_records=timekeeping_records
+    )
 
 @app.route('/admin/assign_shift', methods=['POST'])
 def assign_shift():
