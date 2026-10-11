@@ -22,8 +22,7 @@
         box-shadow: 0 8px 16px rgba(0,0,0,0.06);
     }
 
-    /* SCREEN STYLING FOR PAYSLIP PAPER */
-    .payslip-paper {
+    .document-paper {
         background: #FFFFFF;
         border: 1px solid #CBD5E1;
         border-radius: 8px;
@@ -34,13 +33,13 @@
         width: 100%;
     }
 
-    .payslip-table {
+    .doc-table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 0.5rem;
     }
 
-    .payslip-table th {
+    .doc-table th {
         background-color: var(--gp-navy) !important;
         color: #FFFFFF !important;
         font-size: 0.72rem;
@@ -51,14 +50,14 @@
         print-color-adjust: exact;
     }
 
-    .payslip-table td {
-        padding: 5px 8px;
+    .doc-table td {
+        padding: 6px 8px;
         border-bottom: 1px solid #E2E8F0;
         font-size: 0.78rem;
         vertical-align: middle;
     }
 
-    .payslip-section-title {
+    .doc-section-title {
         background-color: #F1F5F9 !important;
         font-weight: 700;
         font-size: 0.75rem;
@@ -78,17 +77,15 @@
             margin: 10mm;
         }
 
-        /* Itago ang buong web layout at modals wrapper */
         body * {
             visibility: hidden !important;
         }
 
-        /* Ipakita LANG ang printable document at linisin ang position */
-        #printablePayslip, #printablePayslip * {
+        #printablePayslip, #printablePayslip *, #printableDTR, #printableDTR *, #printableMasterPayroll, #printableMasterPayroll * {
             visibility: visible !important;
         }
 
-        #printablePayslip {
+        #printablePayslip, #printableDTR, #printableMasterPayroll {
             position: fixed !important;
             left: 0 !important;
             top: 0 !important;
@@ -118,7 +115,6 @@
 </style>
 
 <div class="container py-4 no-print">
-    <!-- HEADER ACTION BAR -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="fw-bold mb-1" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-spreadsheet me-2"></i>DTR & Printable Reports</h4>
@@ -160,14 +156,39 @@
                     </div>
                     <p class="text-muted small">Official record of daily shift timestamps and tardiness logs.</p>
                 </div>
-                <button onclick="window.print()" class="btn btn-outline-danger btn-sm rounded-3 fw-bold mt-3">
-                    <i class="bi bi-printer me-1"></i> Print / View DTR
-                </button>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-danger btn-sm rounded-3 flex-grow-1 fw-bold" data-bs-toggle="modal" data-bs-target="#viewDTRModal">
+                        <i class="bi bi-eye me-1"></i> View & Print DTR
+                    </button>
+                </div>
             </div>
         </div>
+
+        <!-- HR / ADMIN EXCLUSIVE: MASTER PAYROLL REGISTER -->
+        {% if user.role != 'employee' %}
+        <div class="col-md-12">
+            <div class="report-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-warning">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="fw-bold text-dark mb-0">Departmental Master Payroll Register</h5>
+                        <i class="bi bi-journal-text fs-2 text-warning"></i>
+                    </div>
+                    <p class="text-muted small">Comprehensive company-wide payroll summary and master payout register for HR auditing.</p>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-warning btn-sm rounded-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#viewMasterPayrollModal">
+                        <i class="bi bi-eye me-1"></i> View & Print Master Payroll
+                    </button>
+                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-warning btn-sm rounded-3 text-dark">
+                        <i class="bi bi-download me-1"></i> Export Master CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- DAILY TIME RECORD LOGS -->
+    <!-- DAILY TIME RECORD LIVE LOGS TABLE -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-header bg-white py-3">
             <h6 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-clock-history me-2"></i>Daily Time Record (DTR) Live Logs</h6>
@@ -217,7 +238,7 @@
     </div>
 </div>
 
-<!-- HARDCORE PERFECT A4 PAYSLIP MODAL -->
+<!-- PAYSLIP MODAL -->
 <div class="modal fade" id="viewPayslipModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -226,10 +247,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
-                
-                <!-- DEDICATED PRINTABLE PAYSLIP DOCUMENT -->
-                <div class="payslip-paper" id="printablePayslip">
-                    <!-- BRANDING HEADER -->
+                <div class="document-paper" id="printablePayslip">
                     <table style="width: 100%; margin-bottom: 12px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px;">
                         <tr>
                             <td style="border: none; padding: 0;">
@@ -248,17 +266,16 @@
                         </tr>
                     </table>
 
-                    <!-- PAY PERIOD & SALARY METRICS HEADER -->
-                    <div class="payslip-section-title">PAY PERIOD AND SALARY INFORMATION</div>
-                    <table class="payslip-table">
+                    <div class="doc-section-title">PAY PERIOD AND SALARY INFORMATION</div>
+                    <table class="doc-table">
                         <thead>
                             <tr>
                                 <th style="width: 16%;">Pay Period</th>
                                 <th style="width: 16%;">Payment Date</th>
                                 <th style="width: 16%;">Pay Begin Date</th>
                                 <th style="width: 16%;">Pay End Date</th>
-                                <th style="width: 18%;">Pay Rate (Semi-Monthly)</th>
-                                <th style="width: 18%;">Annual Base Salary</th>
+                                <th style="width: 18%;">Pay Rate</th>
+                                <th style="width: 18%;">Annual Base</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -273,7 +290,6 @@
                         </tbody>
                     </table>
 
-                    <!-- EMPLOYEE DETAILS TABLE (DYNAMIC NOW) -->
                     <table style="width: 100%; margin-top: 10px; margin-bottom: 12px; font-size: 0.8rem;">
                         <tr>
                             <td style="width: 50%; vertical-align: top; border: none; padding-right: 15px;">
@@ -295,195 +311,201 @@
                         </tr>
                     </table>
 
-                    <!-- SUMMARY CARDS TABLE -->
-                    <table style="width: 100%; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; text-align: center; margin-bottom: 12px;">
-                        <tr>
-                            <td style="padding: 10px; width: 25%; border: none;">
-                                <span style="color: #64748B; display: block; font-size: 0.72rem;">Gross Pay</span>
-                                <strong style="font-size: 0.95rem; color: #0F172A;">₱ 38,500.00</strong>
-                            </td>
-                            <td style="padding: 10px; width: 25%; border: none;">
-                                <span style="color: #64748B; display: block; font-size: 0.72rem;">Pre-Tax Deductions</span>
-                                <strong style="font-size: 0.95rem; color: #DC2626;">₱ 1,737.50</strong>
-                            </td>
-                            <td style="padding: 10px; width: 25%; border: none;">
-                                <span style="color: #64748B; display: block; font-size: 0.72rem;">Loans & EWA</span>
-                                <strong style="font-size: 0.95rem; color: #DC2626;">₱ 389.00</strong>
-                            </td>
-                            <td style="padding: 10px; width: 25%; border: none; border-left: 1px solid #CBD5E1;">
-                                <span style="color: #64748B; display: block; font-size: 0.72rem; font-weight: bold;">Net Compensation</span>
-                                <strong style="font-size: 1.1rem; color: #16A34A;">₱ 36,373.50</strong>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <!-- HOURS, EARNINGS & DEDUCTIONS GRID TABLE -->
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
-                        <tr>
-                            <!-- LEFT COLUMN -->
-                            <td style="width: 49%; vertical-align: top; border: none; padding-right: 1%;">
-                                <div class="payslip-section-title">HOURS AND EARNINGS</div>
-                                <table class="payslip-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 50%;">Description</th>
-                                            <th class="text-center" style="width: 20%;">Hours</th>
-                                            <th class="text-end" style="width: 30%;">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Basic Regular Work Pay</td>
-                                            <td class="text-center">88.00</td>
-                                            <td class="text-end fw-semibold">₱ 38,500.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Rice Subsidy Allowance</td>
-                                            <td class="text-center">0.00</td>
-                                            <td class="text-end fw-semibold">₱ 692.31</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Meal Allowance (Non-Taxable)</td>
-                                            <td class="text-center">0.00</td>
-                                            <td class="text-end fw-semibold">₱ 100.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Night Differential (ND) Pay</td>
-                                            <td class="text-center">20.23</td>
-                                            <td class="text-end fw-semibold">₱ 351.50</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                                <div class="payslip-section-title">LEAVE ACCRUALS (PTO)</div>
-                                <table class="payslip-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 50%;">Description</th>
-                                            <th class="text-center" style="width: 25%;">Current</th>
-                                            <th class="text-center" style="width: 25%;">Balance</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Paid Time Off (PTO / Vacation)</td>
-                                            <td class="text-center">6.67 hrs</td>
-                                            <td class="text-center fw-bold">33.34 hrs</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-
-                            <!-- RIGHT COLUMN -->
-                            <td style="width: 49%; vertical-align: top; border: none; padding-left: 1%;">
-                                <div class="payslip-section-title">PRE-TAX STATUTORY DEDUCTIONS</div>
-                                <table class="payslip-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 65%;">Description</th>
-                                            <th class="text-end" style="width: 35%;">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>HDMF / Pag-IBIG EE Contribution</td>
-                                            <td class="text-end text-danger">₱ 100.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>PhilHealth EE Contribution</td>
-                                            <td class="text-end text-danger">₱ 962.50</td>
-                                        </tr>
-                                        <tr>
-                                            <td>SSS EE Contribution</td>
-                                            <td class="text-end text-danger">₱ 675.00</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                                <div class="payslip-section-title">TAX & AFTER-TAX DEDUCTIONS</div>
-                                <table class="payslip-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 65%;">Description</th>
-                                            <th class="text-end" style="width: 35%;">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Withholding Tax Deduction</td>
-                                            <td class="text-end text-muted">₱ 0.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>PayWatch EWA / Loan Advance</td>
-                                            <td class="text-end text-danger">₱ 389.00</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <!-- BOTTOM GRID TABLE -->
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="width: 49%; vertical-align: top; border: none; padding-right: 1%;">
-                                <div class="payslip-section-title">NET PAY DISTRIBUTION</div>
-                                <table class="payslip-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 30%;">Type</th>
-                                            <th style="width: 20%;">Bank</th>
-                                            <th style="width: 25%;">Account No.</th>
-                                            <th class="text-end" style="width: 25%;">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Direct Deposit</td>
-                                            <td>SBC</td>
-                                            <td>0000081158754</td>
-                                            <td class="text-end fw-bold text-success">₱ 36,373.50</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-
-                            <td style="width: 49%; vertical-align: top; border: none; padding-left: 1%;">
-                                <div class="payslip-section-title">YEAR-TO-DATE (YTD) SUMMARY</div>
-                                <table class="payslip-table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-muted" style="width: 60%;">Non-Taxable Earnings YTD:</td>
-                                            <td class="text-end fw-semibold" style="width: 40%;">₱ 9,189.94</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted">Pre-Tax Deductions YTD:</td>
-                                            <td class="text-end fw-semibold text-danger">₱ 6,158.76</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted">Total Gross Earnings YTD:</td>
-                                            <td class="text-end fw-bold">₱ 51,642.91</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <!-- FOOTER -->
                     <div style="margin-top: 15px; padding-top: 8px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.7rem;">
                         This is an official system-generated payslip from Global Payments HRIS. No signature required.
                     </div>
                 </div>
-
             </div>
             <div class="modal-footer bg-light d-flex justify-content-between no-print">
                 <button type="button" onclick="window.print()" class="btn btn-success btn-sm rounded-3 fw-bold">
-                    <i class="bi bi-printer me-1"></i> Print / Save as PDF
+                    <i class="bi bi-printer me-1"></i> Print / Save Payslip PDF
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- CERTIFICATE OF DTR MODAL -->
+<div class="modal fade" id="viewDTRModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white no-print" style="background-color: var(--gp-navy);">
+                <h5 class="modal-title fw-bold"><i class="bi bi-clock-history me-2"></i>Certificate of Daily Time Record (DTR)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="document-paper" id="printableDTR">
+                    <table style="width: 100%; margin-bottom: 12px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px;">
+                        <tr>
+                            <td style="border: none; padding: 0;">
+                                <div style="display: flex; align-items: center;">
+                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
+                                    <div>
+                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy);">Global Payments</h5>
+                                        <span style="color: #64748B; font-size: 0.75rem;">Timekeeping & Attendance Department</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="border: none; text-align: right; padding: 0;">
+                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">DAILY TIME RECORD</h4>
+                                <span class="badge bg-danger" style="font-size: 0.7rem;">OFFICIAL ATTENDANCE LOG</span>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table style="width: 100%; margin-bottom: 15px; font-size: 0.8rem; background: #F8FAFC; padding: 10px; border-radius: 6px;">
+                        <tr>
+                            <td style="border: none; padding: 4px;"><strong>Employee Name:</strong> {{ user.fullname }}</td>
+                            <td style="border: none; padding: 4px;"><strong>Employee ID:</strong> {{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; padding: 4px;"><strong>Department:</strong> {{ user.department if user.department else 'Operations' }}</td>
+                            <td style="border: none; padding: 4px;"><strong>Shift Schedule:</strong> 09:00 AM - 06:00 PM</td>
+                        </tr>
+                    </table>
+
+                    <div class="doc-section-title">SHIFT TIMESTAMPS & LOGS</div>
+                    <table class="doc-table">
+                        <thead>
+                            <tr>
+                                <th>Work Location / LOB</th>
+                                <th>Shift Start</th>
+                                <th>Clock-In Timestamp</th>
+                                <th>Clock-Out Timestamp</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if timekeeping_records %}
+                                {% for t in timekeeping_records %}
+                                <tr>
+                                    <td>{{ t.lob if t.lob else 'Cubao QC' }}</td>
+                                    <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
+                                    <td class="text-success fw-bold">{{ t.clock_in }}</td>
+                                    <td class="text-danger fw-bold">{{ t.clock_out if t.clock_out else 'Active Shift' }}</td>
+                                    <td>
+                                        {% if t.clock_out %}
+                                            <span class="badge bg-secondary">COMPLETED</span>
+                                        {% else %}
+                                            <span class="badge bg-success">LOGGED IN</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-3">No attendance logs recorded for this period.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+
+                    <div class="row mt-5 pt-4 border-top">
+                        <div class="col-6 text-center">
+                            <p class="mb-4 text-muted small">Certified Correct by:</p>
+                            <p class="fw-bold border-bottom pb-1 mb-1">HR Timekeeping Officer</p>
+                            <p class="text-muted small">Global Payments Inc.</p>
+                        </div>
+                        <div class="col-6 text-center">
+                            <p class="mb-4 text-muted small">Employee Acknowledgment:</p>
+                            <p class="fw-bold border-bottom pb-1 mb-1">{{ user.fullname }}</p>
+                            <p class="text-muted small">Signature over Printed Name</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 25px; padding-top: 8px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.7rem;">
+                        This is an official system-generated Certificate of Daily Time Record from Global Payments HRIS.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light d-flex justify-content-between no-print">
+                <button type="button" onclick="window.print()" class="btn btn-danger btn-sm rounded-3 fw-bold">
+                    <i class="bi bi-printer me-1"></i> Print / Save DTR PDF
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- HR EXCLUSIVE: MASTER PAYROLL REGISTER MODAL -->
+{% if user.role != 'employee' %}
+<div class="modal fade" id="viewMasterPayrollModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white no-print" style="background-color: var(--gp-navy);">
+                <h5 class="modal-title fw-bold"><i class="bi bi-journal-text me-2"></i>Departmental Master Payroll Register</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="document-paper" id="printableMasterPayroll">
+                    <table style="width: 100%; margin-bottom: 12px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px;">
+                        <tr>
+                            <td style="border: none; padding: 0;">
+                                <div style="display: flex; align-items: center;">
+                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
+                                    <div>
+                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy);">Global Payments</h5>
+                                        <span style="color: #64748B; font-size: 0.75rem;">Departmental Master Payroll Summary</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="border: none; text-align: right; padding: 0;">
+                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">MASTER REGISTER</h4>
+                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">HR AUDIT READY</span>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="doc-section-title">COMPANY-WIDE PAYROLL PERIOD: OCTOBER 2026</div>
+                    <table class="doc-table">
+                        <thead>
+                            <tr>
+                                <th>Emp ID</th>
+                                <th>Employee Name</th>
+                                <th>Department</th>
+                                <th class="text-end">Basic Pay</th>
+                                <th class="text-end">Overtime</th>
+                                <th class="text-end">Deductions</th>
+                                <th class="text-end">Net Pay</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>GP-200110</td>
+                                <td class="fw-semibold">Keithley Modina</td>
+                                <td>IT & Infrastructure</td>
+                                <td class="text-end">₱ 38,500.00</td>
+                                <td class="text-end">₱ 1,500.00</td>
+                                <td class="text-end">₱ 3,626.50</td>
+                                <td class="text-end fw-bold text-success">₱ 36,373.50</td>
+                            </tr>
+                            <tr>
+                                <td>GP-2026-002</td>
+                                <td class="fw-semibold">Cindy Cataluña</td>
+                                <td>Engineering</td>
+                                <td class="text-end">₱ 35,000.00</td>
+                                <td class="text-end">₱ 1,200.00</td>
+                                <td class="text-end">₱ 3,100.00</td>
+                                <td class="text-end fw-bold text-success">₱ 33,100.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top: 15px; padding-top: 8px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.7rem;">
+                        Official HR Master Payroll Register generated for Global Payments Inc.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light d-flex justify-content-between no-print">
+                <button type="button" onclick="window.print()" class="btn btn-warning btn-sm rounded-3 fw-bold text-dark">
+                    <i class="bi bi-printer me-1"></i> Print Master Register
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

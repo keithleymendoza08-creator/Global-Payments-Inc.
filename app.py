@@ -415,7 +415,6 @@ def reports():
 
     try:
         with db.cursor() as cur:
-            # Kunin ang aktibong user mula sa session gamit ang session['user_id']
             cur.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
             current_user = cur.fetchone()
 
@@ -430,7 +429,6 @@ def reports():
                     'daily_rate': 3500
                 }
 
-            # Kunin ang timekeeping records para sa kasalukuyang nakalogin
             cur.execute("""
                 SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
                 FROM timekeeping t
