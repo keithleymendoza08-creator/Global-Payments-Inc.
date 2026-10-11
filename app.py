@@ -129,53 +129,6 @@ def login():
         flash('Invalid email or password', 'danger')
     return render_template('login.html')
 
-# ===== UTILITY ROUTE TO ADD USERS WITH HASHED PASSWORDS =====
-@app.route('/add-user-hashed', methods=['GET', 'POST'])
-def add_user_hashed():
-    """Temporary route to seed or insert users into Supabase with properly hashed passwords."""
-    if request.method == 'POST':
-        employee_id = request.form.get('employee_id', '').strip()
-        fullname = request.form.get('fullname', '').strip()
-        email = request.form.get('email', '').strip()
-        raw_password = request.form.get('password', '').strip()
-        role = request.form.get('role', 'employee').strip()
-        department = request.form.get('department', 'IT').strip()
-        job_title = request.form.get('job_title', 'Staff').strip()
-
-        if not email or not raw_password:
-            return "Email and password are required.", 400
-
-        hashed_password = generate_password_hash(raw_password)
-        db = get_db()
-        try:
-            with db.cursor() as cur:
-                cur.execute("""
-                    INSERT INTO users (employee_id, fullname, email, password, role, department, job_title)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """, (employee_id, fullname, email, hashed_password, role, department, job_title))
-                db.commit()
-            return f"Successfully added user {email} with a hashed password! You can now <a href='/login'>login</a>."
-        except Exception as e:
-            return f"Error adding user: {e}", 500
-
-    return '''
-        <h2>Add User with Hashed Password</h2>
-        <form method="POST">
-            <input type="text" name="employee_id" placeholder="Employee ID"><br><br>
-            <input type="text" name="fullname" placeholder="Full Name" required><br><br>
-            <input type="email" name="email" placeholder="Email Address" required><br><br>
-            <input type="password" name="password" placeholder="Password" required><br><br>
-            <select name="role">
-                <option value="employee">Employee</option>
-                <option value="admin">Admin</option>
-                <option value="hr">HR</option>
-            </select><br><br>
-            <input type="text" name="department" placeholder="Department"><br><br>
-            <input type="text" name="job_title" placeholder="Job Title"><br><br>
-            <button type="submit">Add User</button>
-        </form>
-    '''
-
 # ===== DIRECT EMPLOYEE REGISTRATION (WALANG OTP) =====
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -190,7 +143,6 @@ def register():
     department = request.form.get('department','').strip()
     job_title = request.form.get('job_title','').strip()
     
-    # --- MGA BAGONG FIELDS ---
     daily_rate = request.form.get('daily_rate', 0)
     personal_number = request.form.get('personal_number', '').strip()
     hire_date = request.form.get('hire_date') or None
@@ -418,6 +370,24 @@ def dashboard():
             search_q=q,
             current_month_year=current_month_year
         )
+
+# ===== DTR & REPORTS PAGE =====
+@app.route('/reports')
+def reports():
+    if 'user_id' not in session:
+        return redirect('/login')
+    
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("""
+            SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
+            FROM timekeeping t
+            JOIN users u ON u.id=t.user_id
+            ORDER BY t.clock_in DESC
+        """)
+        timekeeping_records = cur.fetchall() or []
+        
+    return render_template('reports.html', timekeeping_records=timekeeping_records)
 
 # ===== SHIFT ASSIGNMENT MANAGEMENT =====
 @app.route('/admin/assign_shift', methods=['POST'])
