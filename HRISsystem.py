@@ -12,7 +12,7 @@ def get_db():
     return psycopg.connect(DATABASE_URL, row_factory=dict_row)
 
 def init_system():
-    """Initializes database tables required for HRIS operations."""
+    """Initializes database tables required for HRIS operations[cite: 12]."""
     try:
         conn = get_db()
         with conn.cursor() as cur:
@@ -65,11 +65,12 @@ def init_system():
 
 def record_time_in(user_id):
     """
-    Calculates tardy minutes based on standard shift start (09:00 AM) and grace period (15 mins).
-    Formula: Tardy Minutes = max(0, Time In - (Shift Start + Grace Period))
+    Calculates tardy minutes based on standard shift start (09:00 AM) and grace period (15 mins)[cite: 12].
+    Formula: Tardy Minutes = max(0, Time In - (Shift Start + Grace Period))[cite: 12]
     """
     conn = get_db()
-    now = datetime.now()
+    # Adjusted to Philippine Standard Time (UTC+8) for presentation accuracy
+    now = datetime.now() + timedelta(hours=8)
     
     # Shift Boundary: 09:00 AM, Grace Period: 15 mins (09:15 AM limit)
     shift_start = datetime.combine(now.date(), time(9, 0))
@@ -89,9 +90,10 @@ def record_time_in(user_id):
     conn.close()
 
 def record_time_out(user_id):
-    """Updates the active clock-in session with clock-out timestamp and calculates undertime if applicable."""
+    """Updates the active clock-in session with clock-out timestamp and calculates undertime if applicable[cite: 12]."""
     conn = get_db()
-    now = datetime.now()
+    # Adjusted to Philippine Standard Time (UTC+8) for presentation accuracy
+    now = datetime.now() + timedelta(hours=8)
     
     # Standard Shift End: 05:00 PM (17:00)
     shift_end = datetime.combine(now.date(), time(17, 0))
@@ -113,7 +115,7 @@ def record_time_out(user_id):
     conn.close()
 
 def request_leave(user_id, leave_type, start_date, end_date, reason):
-    """Files a new leave application."""
+    """Files a new leave application[cite: 12]."""
     conn = get_db()
     try:
         with conn.cursor() as cur:
@@ -128,7 +130,7 @@ def request_leave(user_id, leave_type, start_date, end_date, reason):
         return False, f"Failed to submit leave: {e}"
 
 def approve_leave(leave_id, manager_id):
-    """Approves a pending leave application."""
+    """Approves a pending leave application[cite: 12]."""
     conn = get_db()
     try:
         with conn.cursor() as cur:
@@ -144,7 +146,7 @@ def approve_leave(leave_id, manager_id):
         return False, f"Approval error: {e}"
 
 def update_profile_pic(user_id, filename):
-    """Updates user profile picture filename."""
+    """Updates user profile picture filename[cite: 12]."""
     conn = get_db()
     with conn.cursor() as cur:
         cur.execute("UPDATE users SET profile_pic = %s WHERE id = %s", (filename, user_id))
@@ -153,9 +155,9 @@ def update_profile_pic(user_id, filename):
 
 def process_periodic_payroll(period_start, period_end):
     """
-    Calculates Net Pay based on the formula:
-    Net Pay = (Basic Pay + Overtime) - (Tardy Deductions + Absences + Taxes)
-    Locks the period against retroactive edits.
+    Calculates Net Pay based on the formula:[cite: 12]
+    Net Pay = (Basic Pay + Overtime) - (Tardy Deductions + Absences + Taxes)[cite: 12]
+    Locks the period against retroactive edits[cite: 12].
     """
     conn = get_db()
     with conn.cursor() as cur:
