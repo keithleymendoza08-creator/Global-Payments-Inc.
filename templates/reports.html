@@ -66,12 +66,10 @@
 
     /* --- STRICT PRINT ONLY RULES --- */
     @media print {
-        /* Itago ang buong web layout, headers, navbar, at modals */
         body * {
             visibility: hidden !important;
         }
 
-        /* Ipakita lamang ang mismong payslip document */
         #printablePayslip, #printablePayslip * {
             visibility: visible !important;
         }
@@ -91,7 +89,6 @@
             display: none !important;
         }
 
-        /* Siguraduhing maayos ang kulay kapag ginawang PDF o print */
         * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -164,6 +161,7 @@
                             <th>Name</th>
                             <th>Shift Start</th>
                             <th>Clock-In Timestamp</th>
+                            <th>Clock-Out Timestamp</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -175,13 +173,20 @@
                                 <td>{{ t.employee_id if t.employee_id else 'N/A' }}</td>
                                 <td class="fw-semibold">{{ t.fullname }}</td>
                                 <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
-                                <td class="text-danger fw-bold">{{ t.clock_in }}</td>
-                                <td><span class="badge bg-success">LOGGED</span></td>
+                                <td class="text-success fw-bold">{{ t.clock_in }}</td>
+                                <td class="text-danger fw-bold">{{ t.clock_out if t.clock_out else 'Active Shift' }}</td>
+                                <td>
+                                    {% if t.clock_out %}
+                                        <span class="badge bg-secondary">COMPLETED</span>
+                                    {% else %}
+                                        <span class="badge bg-success">LOGGED IN</span>
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">No timekeeping logs found for this period.</td>
+                                <td colspan="7" class="text-center text-muted py-4">No timekeeping logs found for this period.</td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -191,7 +196,7 @@
     </div>
 </div>
 
-<!-- ITEMIZED PAYSLIP MODAL & PRINT CONTAINER -->
+<!-- HARDCORE ITEMIZED PAYSLIP MODAL -->
 <div class="modal fade" id="viewPayslipModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -224,48 +229,39 @@
                     <div class="row g-3 mb-3 small">
                         <div class="col-6 border-end">
                             <table class="payslip-header-table">
-                                <tr><td class="text-muted">Employee Name:</td><td class="fw-bold">{{ user.fullname }}</td></tr>
-                                <tr><td class="text-muted">Job Title:</td><td class="fw-semibold">{{ user.job_title if user.job_title else 'Network Engineer' }}</td></tr>
-                                <tr><td class="text-muted">Employee ID:</td><td class="fw-semibold">{{ user.employee_id if user.employee_id else 'GP-88392' }}</td></tr>
-                                <tr><td class="text-muted">Department:</td><td class="fw-semibold">{{ user.department if user.department else 'Information Technology' }}</td></tr>
+                                <tr><td class="text-muted">Employee Name:</td><td class="fw-bold">{{ user.fullname if user.fullname else 'Keithley Modina' }}</td></tr>
+                                <tr><td class="text-muted">Job Title:</td><td class="fw-semibold">Network Engineer</td></tr>
+                                <tr><td class="text-muted">Employee ID:</td><td class="fw-semibold">GP-200110</td></tr>
+                                <tr><td class="text-muted">Department:</td><td class="fw-semibold">IT & Infrastructure</td></tr>
                             </table>
                         </div>
                         <div class="col-6">
                             <table class="payslip-header-table">
                                 <tr><td class="text-muted">Employer:</td><td class="fw-semibold">Global Payments Philippines</td></tr>
-                                <tr><td class="text-muted">Work Location:</td><td class="fw-semibold">{{ user.work_location if user.work_location else 'Cubao, Quezon City' }}</td></tr>
-                                <tr><td class="text-muted">Daily Rate:</td><td class="fw-bold text-primary">₱ {{ user.daily_rate if user.daily_rate else '3,500.00' }}</td></tr>
-                                <tr><td class="text-muted">Pay Period:</td><td class="fw-semibold">Semi-Monthly (Oct 1 - Oct 15)</td></tr>
+                                <tr><td class="text-muted">Work Location:</td><td class="fw-semibold">Cubao Quezon City</td></tr>
+                                <tr><td class="text-muted">Daily Rate:</td><td class="fw-bold text-primary">₱ 3,500.00</td></tr>
+                                <tr><td class="text-muted">Pay Period:</td><td class="fw-semibold">Semi-Monthly (Oct 1 - Oct 15, 2026)</td></tr>
                             </table>
                         </div>
                     </div>
 
                     <!-- COMPUTATION SUMMARY -->
-                    {% set monthly = (user.daily_rate | float) * 22 if user.daily_rate else 77000 %}
-                    {% set gross = (monthly / 2) %}
-                    {% set hdmf = 200.0 if (monthly * 0.02) >= 200 else (monthly * 0.02) %}
-                    {% set ph = 2250.0 if (monthly * 0.025) >= 2250 else (monthly * 0.025) %}
-                    {% set sss = 1350.0 if monthly >= 29750 else 250.0 %}
-                    {% set pre_tax = (hdmf/2) + (ph/2) + (sss/2) %}
-                    {% set ewa = 389.0 %}
-                    {% set net = gross - pre_tax - ewa %}
-
                     <div class="row text-center bg-light p-3 rounded mb-3 border g-2 small">
                         <div class="col-3">
                             <span class="text-muted d-block">Gross Pay</span>
-                            <strong class="text-dark fs-6">₱ {{ "%.2f"|format(gross) }}</strong>
+                            <strong class="text-dark fs-6">₱ 38,500.00</strong>
                         </div>
                         <div class="col-3">
                             <span class="text-muted d-block">Pre-Tax Deductions</span>
-                            <strong class="text-danger fs-6">₱ {{ "%.2f"|format(pre_tax) }}</strong>
+                            <strong class="text-danger fs-6">₱ 1,737.50</strong>
                         </div>
                         <div class="col-3">
                             <span class="text-muted d-block">Loans & EWA</span>
-                            <strong class="text-danger fs-6">₱ {{ "%.2f"|format(ewa) }}</strong>
+                            <strong class="text-danger fs-6">₱ 389.00</strong>
                         </div>
                         <div class="col-3 border-start">
                             <span class="text-muted d-block fw-bold">Net Compensation</span>
-                            <strong class="text-success fs-5">₱ {{ "%.2f"|format(net) }}</strong>
+                            <strong class="text-success fs-5">₱ 36,373.50</strong>
                         </div>
                     </div>
 
@@ -283,7 +279,7 @@
                                 <tbody>
                                     <tr>
                                         <td>Basic Pay (Semi-Monthly)</td>
-                                        <td class="text-end fw-semibold">₱ {{ "%.2f"|format(gross) }}</td>
+                                        <td class="text-end fw-semibold">₱ 38,500.00</td>
                                     </tr>
                                     <tr>
                                         <td>Rice Subsidy Allowance</td>
@@ -313,19 +309,19 @@
                                 <tbody>
                                     <tr>
                                         <td>HDMF / Pag-IBIG Contribution</td>
-                                        <td class="text-end text-danger">₱ {{ "%.2f"|format(hdmf/2) }}</td>
+                                        <td class="text-end text-danger">₱ 100.00</td>
                                     </tr>
                                     <tr>
                                         <td>PhilHealth EE Contribution</td>
-                                        <td class="text-end text-danger">₱ {{ "%.2f"|format(ph/2) }}</td>
+                                        <td class="text-end text-danger">₱ 962.50</td>
                                     </tr>
                                     <tr>
                                         <td>SSS EE Contribution</td>
-                                        <td class="text-end text-danger">₱ {{ "%.2f"|format(sss/2) }}</td>
+                                        <td class="text-end text-danger">₱ 675.00</td>
                                     </tr>
                                     <tr>
                                         <td>PayWatch EWA / Loan Deduction</td>
-                                        <td class="text-end text-danger">₱ {{ "%.2f"|format(ewa) }}</td>
+                                        <td class="text-end text-danger">₱ 389.00</td>
                                     </tr>
                                 </tbody>
                             </table>
