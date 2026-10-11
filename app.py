@@ -65,7 +65,7 @@ def allowed_file(filename):
 hris.init_system()
 
 def migrate_users_table():
-    """Migrates schema to support detailed registration fields and shift assignments."""
+    """Migrates schema to support detailed registration fields, shift assignments, and leave balances."""
     try:
         conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
         with conn.cursor() as cur:
@@ -74,18 +74,22 @@ def migrate_users_table():
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS department TEXT DEFAULT '';")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS hourly_rate NUMERIC DEFAULT 0;")
             
-            # --- MGA BAGONG FIELDS ---
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS daily_rate NUMERIC DEFAULT 0;")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_number TEXT DEFAULT '';")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS hire_date DATE;")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'Philippines';")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_address TEXT DEFAULT '';")
             
-            # --- SHIFT ASSIGNMENT FIELDS ---
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS shift_start TIME DEFAULT '09:00:00';")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS shift_end TIME DEFAULT '18:00:00';")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS rest_days TEXT DEFAULT 'Saturday,Sunday';")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS work_location TEXT DEFAULT 'Cubao Quezon City';")
+            
+            # --- LEAVE BALANCE FIELDS ---
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS vl_balance NUMERIC DEFAULT 15;")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS sl_balance NUMERIC DEFAULT 15;")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS el_balance NUMERIC DEFAULT 5;")
+            
             conn.commit()
         conn.close()
     except Exception as e:
@@ -105,7 +109,6 @@ def close(exception):
     if db:
         db.close()
 
-# ===== ROUTE REDIRECT: DASHBOARD IF LOGGED IN =====
 @app.route('/')
 def index():
     if 'user_id' in session:
@@ -129,7 +132,6 @@ def login():
         flash('Invalid email or password', 'danger')
     return render_template('login.html')
 
-# ===== DIRECT EMPLOYEE REGISTRATION (WALANG OTP) =====
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'GET':
@@ -182,18 +184,14 @@ def register():
             db.commit()
         
         flash("Employee account successfully created!", "success")
-        
-        # Kung naka-login ang HR/Admin, ibalik sila sa Dashboard
         if 'user_id' in session:
             return redirect(url_for("dashboard"))
-            
         return redirect(url_for("login"))
     except Exception as e:
         print("Registration Error:", e)
         flash("Email or Employee ID already exists in the system.", "danger")
         return render_template("register.html")
 
-# ===== FORGOT & RESET PASSWORD ROUTES =====
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -285,7 +283,6 @@ def logout():
     session.clear()
     return redirect('/login')
 
-# ===== MAIN DASHBOARD =====
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -377,7 +374,6 @@ def dashboard():
             current_month_year=current_month_year
         )
 
-# ===== DTR & REPORTS PAGE =====
 @app.route('/reports')
 def reports():
     if 'user_id' not in session:
@@ -400,7 +396,6 @@ def reports():
         
     return render_template('reports.html', timekeeping_records=timekeeping_records)
 
-# ===== SHIFT ASSIGNMENT MANAGEMENT =====
 @app.route('/admin/assign_shift', methods=['POST'])
 def assign_shift():
     if session.get('role') not in ['admin', 'hr_manager', 'supervisor', 'hr']:
@@ -431,7 +426,6 @@ def assign_shift():
 
     return redirect('/dashboard')
 
-# ===== TIMEKEEPING & TARDINESS =====
 @app.route('/timekeeping', methods=['GET', 'POST'])
 def timekeeping():
     if 'user_id' not in session:
@@ -456,7 +450,6 @@ def timekeeping():
         records = cur.fetchall() or []
     return render_template('timekeeping.html', records=records)
 
-# ===== LEAVE APPLICATION =====
 @app.route('/leave/apply', methods=['POST'])
 def apply_leave():
     if 'user_id' not in session:
@@ -471,7 +464,6 @@ def apply_leave():
     flash(msg, 'success' if ok else 'danger')
     return redirect('/dashboard')
 
-# ===== MULTI-LEVEL APPROVAL =====
 @app.route('/admin/approve_leave/<int:id>')
 def approve_leave(id):
     if session.get('role') not in ['admin', 'hr_manager', 'supervisor', 'hr']:
@@ -481,7 +473,6 @@ def approve_leave(id):
     flash(msg, 'success' if ok else 'danger')
     return redirect('/dashboard')
 
-# ===== PAYROLL CUT-OFF & LOCKING =====
 @app.route('/admin/calculate_payroll', methods=['POST'])
 def calculate_payroll():
     if session.get('role') not in ['admin', 'hr_manager', 'hr']:
@@ -493,7 +484,6 @@ def calculate_payroll():
     flash(f"Payroll successfully processed and locked for period {period_start} to {period_end}.", 'success')
     return redirect('/dashboard')
 
-# ===== DTR & PAYSLIP PRINTING (CSV EXPORT) =====
 @app.route('/export_payroll_csv')
 def export_payroll_csv():
     if 'user_id' not in session:

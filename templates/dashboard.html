@@ -194,6 +194,14 @@
         border-radius: 50%;
         display: inline-block;
     }
+
+    .leave-balance-badge {
+        background: #F1F5F9;
+        border: 1px solid #CBD5E1;
+        border-radius: 8px;
+        padding: 8px 12px;
+        text-align: center;
+    }
 </style>
 
 <div class="dashboard-container">
@@ -661,15 +669,37 @@
     </div>
 </div>
 
-<!-- UPDATED LEAVE APPLICATION & STATUS LEDGER MODAL -->
+<!-- UPDATED LEAVE APPLICATION & LEAVE BALANCE TRACKER MODAL -->
 <div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header text-white" style="background-color: var(--gp-navy);">
-                <h5 class="modal-title fw-bold"><i class="bi bi-calendar-check me-2"></i>Leave Applications & Status History</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-calendar-check me-2"></i>Leave Applications, Balances & Status History</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
+                <!-- LEAVE BALANCE SUMMARY CARDS -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="leave-balance-badge">
+                            <span class="small text-muted d-block fw-bold">Vacation Leave (VL) Balance</span>
+                            <span class="fs-4 fw-bold text-primary">{{ user.vl_balance if user.vl_balance is not none else 15 }} Days</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="leave-balance-badge">
+                            <span class="small text-muted d-block fw-bold">Sick Leave (SL) Balance</span>
+                            <span class="fs-4 fw-bold text-success">{{ user.sl_balance if user.sl_balance is not none else 15 }} Days</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="leave-balance-badge">
+                            <span class="small text-muted d-block fw-bold">Emergency Leave (EL) Balance</span>
+                            <span class="fs-4 fw-bold text-warning text-dark">{{ user.el_balance if user.el_balance is not none else 5 }} Days</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row g-4">
                     <!-- KALIWA: FORM SA PAG-FILE NG LEAVE -->
                     <div class="col-lg-5 border-end pe-lg-4">
@@ -679,9 +709,9 @@
                                 <label class="form-label fw-semibold small">Leave Type</label>
                                 <select name="leave_type" class="form-select form-select-sm" required>
                                     <option value="" disabled selected>Select Leave Type</option>
-                                    <option value="Vacation Leave">Vacation Leave</option>
-                                    <option value="Sick Leave">Sick Leave</option>
-                                    <option value="Emergency Leave">Emergency Leave</option>
+                                    <option value="Vacation Leave">Vacation Leave (VL)</option>
+                                    <option value="Sick Leave">Sick Leave (SL)</option>
+                                    <option value="Emergency Leave">Emergency Leave (EL)</option>
                                 </select>
                             </div>
                             <div class="row g-2 mb-3">
@@ -704,10 +734,10 @@
                         </form>
                     </div>
 
-                    <!-- KANAN: TABLE NG STATUS HISTORY (PENDING, APPROVED, REJECTED) -->
+                    <!-- KANAN: TABLE NG STATUS HISTORY -->
                     <div class="col-lg-7">
                         <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-clock-history me-1"></i>My Leave Status Ledger</h6>
-                        <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                        <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
                             <table class="table table-hover align-middle border text-center small">
                                 <thead class="table-light sticky-top">
                                     <tr>
@@ -855,6 +885,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
+        path = document.createElement('div');
         const dayCell = document.createElement('div');
         dayCell.className = 'calendar-cell';
         dayCell.textContent = day;
