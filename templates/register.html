@@ -2,7 +2,7 @@
 {% block title %}Register - Global Payments HRIS{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-md-8">
         <div class="card card-custom p-4">
             <h4 class="fw-bold text-gp mb-3">Employee Registration</h4>
             <form action="/register" method="POST">
@@ -38,6 +38,28 @@
                         <input type="text" name="job_title" class="form-control" required placeholder="Software Engineer">
                     </div>
 
+                    <!-- MGA BAGONG FIELDS -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Daily Rate (PHP)</label>
+                        <input type="number" step="0.01" name="daily_rate" class="form-control" placeholder="1200.00" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Personal Number</label>
+                        <input type="text" name="personal_number" class="form-control" placeholder="09123456789" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Hire Date</label>
+                        <input type="date" name="hire_date" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Country</label>
+                        <input type="text" name="country" class="form-control" value="Philippines" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Personal Address</label>
+                        <input type="text" name="personal_address" class="form-control" placeholder="House No., Street, Barangay, City" required>
+                    </div>
+
                     <!-- Shift Start & Shift End -->
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Shift Start</label>
@@ -54,7 +76,7 @@
                         <input type="text" name="work_location" class="form-control" placeholder="e.g. Cubao Quezon City" value="Cubao Quezon City" required>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-gp-accent w-100 fw-bold py-2 mt-4">Send OTP & Register</button>
+                <button type="submit" class="btn btn-gp-accent w-100 fw-bold py-2 mt-4">Register Employee</button>
             </form>
             <p class="text-center small mt-3 mb-0">Already registered? <a href="/login" class="fw-bold text-gp">Login here</a></p>
         </div>

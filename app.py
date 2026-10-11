@@ -74,6 +74,13 @@ def migrate_users_table():
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS department TEXT DEFAULT '';")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS hourly_rate NUMERIC DEFAULT 0;")
             
+            # --- MGA BAGONG FIELDS ---
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS daily_rate NUMERIC DEFAULT 0;")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_number TEXT DEFAULT '';")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS hire_date DATE;")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'Philippines';")
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_address TEXT DEFAULT '';")
+            
             # --- SHIFT ASSIGNMENT FIELDS ---
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS shift_start TIME DEFAULT '09:00:00';")
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS shift_end TIME DEFAULT '18:00:00';")
@@ -169,7 +176,7 @@ def add_user_hashed():
         </form>
     '''
 
-# ===== REGISTER WITH OTP =====
+# ===== DIRECT EMPLOYEE REGISTRATION (WALANG OTP) =====
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'GET':
@@ -183,6 +190,13 @@ def register():
     department = request.form.get('department','').strip()
     job_title = request.form.get('job_title','').strip()
     
+    # --- MGA BAGONG FIELDS ---
+    daily_rate = request.form.get('daily_rate', 0)
+    personal_number = request.form.get('personal_number', '').strip()
+    hire_date = request.form.get('hire_date') or None
+    country = request.form.get('country', 'Philippines').strip()
+    personal_address = request.form.get('personal_address', '').strip()
+    
     shift_start = request.form.get('shift_start', '09:00').strip()
     shift_end = request.form.get('shift_end', '18:00').strip()
     work_location = request.form.get('work_location', 'Cubao Quezon City').strip()
@@ -195,26 +209,31 @@ def register():
         flash('Please select Department and Job Title', 'danger')
         return render_template('register.html')
 
-    otp = str(random.randint(100000, 999999))
-    session['pending_user'] = {
-        'employee_id': employee_id,
-        'fullname': fullname,
-        'email': email,
-        'password': password,
-        'role': role,
-        'job_title': job_title,
-        'department': department,
-        'shift_start': shift_start,
-        'shift_end': shift_end,
-        'work_location': work_location,
-        'otp': otp,
-        'otp_expiry': time.time() + 300
-    }
-
-    threading.Thread(target=send_otp_email_worker, args=(email, otp, "Account Registration")).start()
-    flash("We sent a 6-digit OTP code to your email address. Please check your Inbox / Spam folder.", "info")
-
-    return redirect(url_for("verify_otp", action="register"))
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            cur.execute("""
+                INSERT INTO users (
+                    employee_id, fullname, email, password, role, 
+                    job_title, department, daily_rate, personal_number, 
+                    hire_date, country, personal_address, 
+                    shift_start, shift_end, work_location
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                employee_id, fullname, email,
+                generate_password_hash(password), role,
+                job_title, department, daily_rate, personal_number,
+                hire_date, country, personal_address,
+                shift_start, shift_end, work_location
+            ))
+            db.commit()
+        flash("Employee account successfully created! You can now login.", "success")
+        return redirect(url_for("login"))
+    except Exception as e:
+        print("Registration Error:", e)
+        flash("Email or Employee ID already exists in the system.", "danger")
+        return render_template("register.html")
 
 # ===== FORGOT & RESET PASSWORD ROUTES =====
 @app.route('/forgot-password', methods=['GET', 'POST'])
@@ -279,51 +298,25 @@ def reset_password():
 
 @app.route('/verify-otp/<action>', methods=['GET', 'POST'])
 def verify_otp(action):
-    session_key = 'pending_user' if action == 'register' else 'pending_reset'
+    if action != 'reset':
+        return redirect(url_for('login'))
 
-    if session_key not in session:
+    if 'pending_reset' not in session:
         flash("Session expired or invalid access. Please try again.", "warning")
-        return redirect(url_for("register" if action == "register" else "forgot_password"))
+        return redirect(url_for("forgot_password"))
 
     if request.method == "POST":
         user_otp = request.form.get("otp_code", "").strip()
-        data = session[session_key]
+        data = session['pending_reset']
 
         if time.time() > data.get('otp_expiry', 0):
             flash("The OTP code has expired. Please try again.", "danger")
             return render_template("otp_verify.html", action_url=url_for('verify_otp', action=action), action=action)
 
         if user_otp == data['otp']:
-            db = get_db()
-            if action == "register":
-                try:
-                    with db.cursor() as cur:
-                        cur.execute("""
-                            INSERT INTO users (
-                                employee_id, fullname, email, password, role, 
-                                job_title, department, shift_start, shift_end, work_location
-                            )
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """, (
-                            data['employee_id'], data['fullname'], data['email'],
-                            generate_password_hash(data['password']), data['role'],
-                            data['job_title'], data['department'],
-                            data.get('shift_start', '09:00:00'),
-                            data.get('shift_end', '18:00:00'),
-                            data.get('work_location', 'Cubao Quezon City')
-                        ))
-                        db.commit()
-                    session.pop(session_key, None)
-                    flash("Account successfully verified and created! Please login.", "success")
-                    return redirect(url_for("login"))
-                except Exception as e:
-                    print("Registration Error:", e)
-                    flash("Email or Employee ID already exists in the system.", "danger")
-                    return redirect(url_for("register"))
-            elif action == "reset":
-                session['pending_reset_verified'] = session.pop(session_key)
-                flash("OTP verified successfully. Please enter your new password.", "success")
-                return redirect(url_for("reset_password"))
+            session['pending_reset_verified'] = session.pop('pending_reset')
+            flash("OTP verified successfully. Please enter your new password.", "success")
+            return redirect(url_for("reset_password"))
         else:
             flash("Invalid OTP code. Try again.", "danger")
 
@@ -343,7 +336,6 @@ def dashboard():
     db = get_db()
     q = request.args.get('q', '')
 
-    # Dynamic month and year for calendar header
     now = datetime.now()
     current_month_year = now.strftime('%B %Y')
 
