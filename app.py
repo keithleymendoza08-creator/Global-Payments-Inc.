@@ -11,6 +11,7 @@ import random
 import requests
 import threading
 import time
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'global-payments-hris-2026')
@@ -342,6 +343,10 @@ def dashboard():
     db = get_db()
     q = request.args.get('q', '')
 
+    # Dynamic month and year for calendar header
+    now = datetime.now()
+    current_month_year = now.strftime('%B %Y')
+
     try:
         with db.cursor() as cur:
             cur.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
@@ -397,7 +402,8 @@ def dashboard():
             total_employees=total_employees, 
             pending_leaves_count=pending_leaves_count, 
             total_payroll=total_payroll, 
-            search_q=q
+            search_q=q,
+            current_month_year=current_month_year
         )
 
     except Exception as e:
@@ -417,7 +423,8 @@ def dashboard():
             total_employees=0, 
             pending_leaves_count=0, 
             total_payroll=0.0, 
-            search_q=q
+            search_q=q,
+            current_month_year=current_month_year
         )
 
 # ===== SHIFT ASSIGNMENT MANAGEMENT =====

@@ -198,28 +198,6 @@
         border-radius: 50%;
         display: inline-block;
     }
-
-    /* --- REPORT CARDS STYLES --- */
-    .report-option-card {
-        border-left: 5px solid #CBD5E1;
-        background: #F8FAFC;
-        padding: 1rem 1.25rem;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        color: #1E293B;
-        display: block;
-    }
-
-    .report-option-card:hover {
-        background: #FFFFFF;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        transform: translateX(4px);
-    }
-
-    .report-card-dtr { border-left-color: #FF5E14; }
-    .report-card-payslip { border-left-color: #0D9488; }
-    .report-card-master { border-left-color: #EF4444; }
 </style>
 
 <div class="dashboard-container">
@@ -259,7 +237,7 @@
                 </a>
             </li>
             <li>
-                <a href="#reports-section" class="sidebar-link">
+                <a href="{{ url_for('export_payroll_csv') }}" class="sidebar-link">
                     <i class="bi bi-file-earmark-pdf"></i> My Payslip & DTR
                 </a>
             </li>
@@ -304,7 +282,7 @@
                 </a>
             </li>
             <li>
-                <a href="#reports-section" class="sidebar-link">
+                <a href="{{ url_for('export_payroll_csv') }}" class="sidebar-link">
                     <i class="bi bi-file-earmark-spreadsheet"></i> DTR & Reports
                 </a>
             </li>
@@ -428,55 +406,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- GENERATED PRINTABLE REPORTS SECTION -->
-        <div class="mb-5" id="reports-section">
-            <h5 class="fw-bold mb-1" style="color: var(--gp-navy);">GENERATED PRINTABLE REPORTS</h5>
-            <p class="text-muted small mb-3">Select a printable report document to generate or view.</p>
-
-            <div class="row g-3">
-                <!-- Option 1: Certificate of DTR -->
-                <div class="col-md-4">
-                    <a href="#" class="report-option-card report-card-dtr" data-bs-toggle="modal" data-bs-target="#tardinessModal">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="fw-bold mb-1">Certificate of Daily Time Record (DTR)</h6>
-                                <p class="text-muted small mb-0">Official record of daily shift timestamps and tardiness logs.</p>
-                            </div>
-                            <i class="bi bi-printer fs-4 text-secondary ms-2"></i>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Option 2: Itemized Employee Payslip -->
-                <div class="col-md-4">
-                    <a href="{{ url_for('export_payroll_csv') }}" class="report-option-card report-card-payslip">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="fw-bold mb-1">Itemized Employee Payslip</h6>
-                                <p class="text-muted small mb-0">Detailed gross pay, statutory deductions, and net compensation.</p>
-                            </div>
-                            <i class="bi bi-file-earmark-pdf fs-4 text-secondary ms-2"></i>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Option 3: Departmental Master Payroll Register (HR / Admin Only) -->
-                {% if session.get('role') in ['admin', 'hr_manager', 'hr'] %}
-                <div class="col-md-4">
-                    <a href="{{ url_for('export_payroll_csv') }}" class="report-option-card report-card-master">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="fw-bold mb-1">Departmental Master Payroll Register</h6>
-                                <p class="text-muted small mb-0">Comprehensive department-wide payroll audit statement.</p>
-                            </div>
-                            <i class="bi bi-shield-lock fs-4 text-secondary ms-2"></i>
-                        </div>
-                    </a>
-                </div>
-                {% endif %}
             </div>
         </div>
 
@@ -958,27 +887,6 @@
     </div>
 </div>
 
-<!-- Module 7: Payroll Locking Modal -->
-<div class="modal fade" id="payrollLockModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header text-white" style="background-color: var(--gp-navy);">
-                <h5 class="modal-title fw-bold"><i class="bi bi-lock me-2"></i>Payroll Audit & Locking</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-center p-4">
-                <i class="bi bi-shield-check text-success display-4 mb-3"></i>
-                <h5>Lock Payroll Period</h5>
-                <p class="text-muted">Auditing completes calculations and locks the selected cutoff against retroactive timekeeping edits.</p>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
-                <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-danger rounded-3 px-4">Lock & Export</a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- JAVASCRIPT FOR FIXED CALENDAR GRID GENERATION -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -989,16 +897,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const year = 2026;
     const month = 9; 
 
-    // Define Key Dates
+    // Define Key Dates (Wala nang maling regular holiday sa 12 at 31)
     const paydays = [15, 30];
-    const regularHolidays = [12, 31]; // e.g. Oct 12, Oct 31
     const specialHolidays = [1];      // e.g. Oct 1
     const approvedLeaves = [20, 21];  // e.g. Oct 20-21
 
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Panatilihin ang Headers at i-clear lang ang lumang cells
     calendarContainer.innerHTML = `
         <div class="calendar-day-header">Su</div>
         <div class="calendar-day-header">Mo</div>
@@ -1009,14 +915,12 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="calendar-day-header">Sa</div>
     `;
 
-    // Blank offset cells para pumwesto sa tamang araw ng linggo
     for (let i = 0; i < firstDay; i++) {
         const emptyCell = document.createElement('div');
         emptyCell.className = 'calendar-cell opacity-0';
         calendarContainer.appendChild(emptyCell);
     }
 
-    // Populate Days (1 hanggang 31)
     for (let day = 1; day <= daysInMonth; day++) {
         const dayCell = document.createElement('div');
         dayCell.className = 'calendar-cell';
@@ -1025,9 +929,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (paydays.includes(day)) {
             dayCell.classList.add('payday');
             dayCell.title = "Payday";
-        } else if (regularHolidays.includes(day)) {
-            dayCell.classList.add('reg-holiday');
-            dayCell.title = "Regular Holiday";
         } else if (specialHolidays.includes(day)) {
             dayCell.classList.add('spec-holiday');
             dayCell.title = "Special Non-Working Day";
