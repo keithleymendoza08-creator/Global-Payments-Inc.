@@ -311,7 +311,6 @@
                             <h6 class="fw-bold mb-2" style="color: var(--gp-navy);">How Payroll Can Help You:</h6>
                             <p class="text-muted small mb-3">We're available to assist with questions related to:</p>
 
-                            <!-- KUMPLETONG 7 BULLET POINTS -->
                             <ul class="list-unstyled mb-0 small">
                                 <li class="mb-2 d-flex align-items-start">
                                     <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
@@ -347,7 +346,7 @@
                 </div>
             </div>
 
-            <!-- INTERACTIVE CALENDAR WIDGET WITH ALL 4 LEGENDS -->
+            <!-- INTERACTIVE CALENDAR WIDGET -->
             <div class="col-lg-4">
                 <div class="calendar-card h-100 d-flex flex-column justify-content-between">
                     <div>
@@ -365,10 +364,31 @@
                             <div class="calendar-day-header">Fr</div>
                             <div class="calendar-day-header">Sa</div>
                         </div>
+
+                        <!-- UPCOMING EVENTS & HIGHLIGHTS -->
+                        <div class="mt-3 pt-3 border-top">
+                            <span class="fw-bold d-block mb-2 text-secondary" style="font-size: 0.82rem;">Upcoming Events & Highlights:</span>
+                            <div class="d-flex flex-column gap-2" style="font-size: 0.8rem;">
+                                <div class="p-2 rounded bg-light border-start border-3 border-success d-flex align-items-start">
+                                    <span class="badge bg-success me-2">Oct 15 & 30</span>
+                                    <div>
+                                        <strong class="d-block text-dark">Semi-Monthly Payday</strong>
+                                        <span class="text-muted small">Regular salary disbursement for employees.</span>
+                                    </div>
+                                </div>
+                                <div class="p-2 rounded bg-light border-start border-3 border-warning d-flex align-items-start">
+                                    <span class="badge bg-warning text-dark me-2">Oct 31</span>
+                                    <div>
+                                        <strong class="d-block text-dark">Special Non-Working Holiday</strong>
+                                        <span class="text-muted small">Undas Preparation Day / All Saints' Day Eve.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- KUMPLETONG 4 COLOR LEGENDS -->
-                    <div class="pt-2 border-top">
+                    <!-- COLOR LEGENDS -->
+                    <div class="pt-2 border-top mt-3">
                         <div class="row g-2">
                             <div class="col-6">
                                 <div class="calendar-legend-item">
@@ -458,6 +478,7 @@
 </div>
 
 <!-- MODALS -->
+<!-- UPDATED EMPLOYEE PROFILE MODAL WITH ALL DETAILS & FULL PAGE LINK -->
 <div class="modal fade" id="employeeProfileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -468,12 +489,20 @@
             <div class="modal-body p-4">
                 <div class="row g-3">
                     <div class="col-md-6">
+                        <label class="small text-muted d-block">Employee ID</label>
+                        <span class="fw-semibold text-dark">{{ user.employee_id if user.employee_id else 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-6">
                         <label class="small text-muted d-block">Full Name</label>
                         <span class="fw-semibold text-dark">{{ user.fullname }}</span>
                     </div>
                     <div class="col-md-6">
                         <label class="small text-muted d-block">Email Address</label>
                         <span class="fw-semibold text-dark">{{ user.email }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Personal Number</label>
+                        <span class="fw-semibold text-dark">{{ user.personal_number if user.personal_number else 'N/A' }}</span>
                     </div>
                     <div class="col-md-6">
                         <label class="small text-muted d-block">Department</label>
@@ -483,10 +512,33 @@
                         <label class="small text-muted d-block">Job Title</label>
                         <span class="fw-semibold text-dark">{{ user.job_title }}</span>
                     </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Daily Rate</label>
+                        <span class="fw-semibold text-dark">₱ {{ user.daily_rate if user.daily_rate else '0.00' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Hire Date</label>
+                        <span class="fw-semibold text-dark">{{ user.hire_date if user.hire_date else 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Shift Schedule</label>
+                        <span class="fw-semibold text-dark">{{ user.shift_start }} - {{ user.shift_end }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Work Location</label>
+                        <span class="fw-semibold text-dark">{{ user.work_location if user.work_location else 'Cubao Quezon City' }}</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="small text-muted d-block">Personal Address</label>
+                        <span class="fw-semibold text-dark">{{ user.personal_address if user.personal_address else 'N/A' }}</span>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer bg-light d-flex justify-content-between">
+                <a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm rounded-3 px-3" style="background-color: var(--gp-blue);">
+                    <i class="bi bi-person-lines-fill me-1"></i> Open Full Profile Page
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -561,7 +613,7 @@
     </div>
 </div>
 
-<!-- TARDINESS LEDGER MODAL (CLEANED WITHOUT PLACEHOLDERS) -->
+<!-- TARDINESS LEDGER MODAL -->
 <div class="modal fade" id="tardinessModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -731,8 +783,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const month = 9; 
 
     const paydays = [15, 30];
-    const specialHolidays = [1];
-    const approvedLeaves = [20, 21];
+    const specialHolidays = [31]; 
+    const approvedLeaves = []; 
 
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -763,7 +815,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dayCell.title = "Payday";
         } else if (specialHolidays.includes(day)) {
             dayCell.classList.add('spec-holiday');
-            dayCell.title = "Special Non-Working Day";
+            dayCell.title = "Special Non-Working Day (Undas Prep)";
         } else if (approvedLeaves.includes(day)) {
             dayCell.classList.add('leave-day');
             dayCell.title = "Approved Leave";

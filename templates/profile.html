@@ -1,35 +1,115 @@
 {% extends 'base.html' %}
 {% block title %}User Profile - Global Payments HRIS{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card card-custom p-4">
-            <div class="text-center mb-4">
-                {% if user.profile_pic %}
-                <img src="/static/uploads/profile/{{ user.profile_pic }}" class="rounded-circle mb-3 object-fit-cover" width="120" height="120">
-                {% else %}
-                <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:120px; height:120px; fs-1;">
-                    <i class="bi bi-person display-4"></i>
-                </div>
-                {% endif %}
-                <h4 class="fw-bold text-gp mb-0">{{ user.fullname }}</h4>
-                <p class="text-muted">{{ user.job_title }} | {{ user.department }}</p>
+<style>
+    :root {
+        --gp-navy: #002B49;
+        --gp-blue: #0066B2;
+        --gp-bg: #F8FAFC;
+    }
+    body { background-color: var(--gp-bg); }
+    .profile-card {
+        background: #FFFFFF;
+        border-radius: 12px;
+        border: 1px solid #E2E8F0;
+        padding: 2.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+</style>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-person-badge me-2"></i>Employee Profile Page</h3>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
             </div>
 
-            <form action="/profile" method="POST" enctype="multipart/form-data" class="mb-4">
-                <label class="form-label small fw-bold">Update Profile Photo</label>
-                <div class="input-group">
-                    <input type="file" name="profile_pic" class="form-control" required>
-                    <button type="submit" class="btn btn-gp fw-bold">Upload</button>
+            <div class="profile-card">
+                <div class="text-center mb-4">
+                    {% if user.profile_pic %}
+                    <img src="/static/uploads/profile/{{ user.profile_pic }}" class="rounded-circle mb-3 object-fit-cover shadow-sm" width="120" height="120">
+                    {% else %}
+                    <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width:120px; height:120px;">
+                        <i class="bi bi-person display-4"></i>
+                    </div>
+                    {% endif %}
+                    <h4 class="fw-bold mb-0" style="color: var(--gp-navy);">{{ user.fullname }}</h4>
+                    <p class="text-muted small">{{ user.job_title }} | {{ user.department }}</p>
                 </div>
-            </form>
 
-            <ul class="list-group list-group-flush border-top">
-                <li class="list-group-item d-flex justify-content-between"><strong>Employee ID:</strong> <span>{{ user.employee_id or 'N/A' }}</span></li>
-                <li class="list-group-item d-flex justify-content-between"><strong>Email:</strong> <span>{{ user.email }}</span></li>
-                <li class="list-group-item d-flex justify-content-between"><strong>Role:</strong> <span class="badge bg-primary">{{ user.role|upper }}</span></li>
-                <li class="list-group-item d-flex justify-content-between"><strong>Total Leaves Filed:</strong> <span>{{ stats.total_leaves or 0 }}</span></li>
-            </ul>
+                <form action="/profile" method="POST" enctype="multipart/form-data" class="mb-4 bg-light p-3 rounded-3 border">
+                    <label class="form-label small fw-bold text-dark">Update Profile Photo</label>
+                    <div class="input-group">
+                        <input type="file" name="profile_pic" class="form-control form-control-sm" required>
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-3" style="background-color: var(--gp-blue);">Upload</button>
+                    </div>
+                </form>
+
+                <h5 class="fw-bold mb-3" style="color: var(--gp-navy); font-size: 1rem;"><i class="bi bi-info-circle me-2"></i>Employment Details</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Employee ID</label>
+                        <span class="fw-semibold text-dark">{{ user.employee_id if user.employee_id else 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Email Address</label>
+                        <span class="fw-semibold text-dark">{{ user.email }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Personal Number</label>
+                        <span class="fw-semibold text-dark">{{ user.personal_number if user.personal_number else 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">System Role</label>
+                        <span class="badge bg-primary text-uppercase">{{ user.role }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Department</label>
+                        <span class="fw-semibold text-dark">{{ user.department }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Job Title</label>
+                        <span class="fw-semibold text-dark">{{ user.job_title }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Daily Rate</label>
+                        <span class="fw-semibold text-dark">₱ {{ user.daily_rate if user.daily_rate else '0.00' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Hire Date</label>
+                        <span class="fw-semibold text-dark">{{ user.hire_date if user.hire_date else 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Shift Schedule</label>
+                        <span class="fw-semibold text-dark">{{ user.shift_start }} - {{ user.shift_end }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Work Location</label>
+                        <span class="fw-semibold text-dark">{{ user.work_location if user.work_location else 'Cubao Quezon City' }}</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="small text-muted d-block">Personal Address</label>
+                        <span class="fw-semibold text-dark">{{ user.personal_address if user.personal_address else 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Total Leaves Filed</label>
+                        <span class="fw-semibold text-dark">{{ stats.total_leaves or 0 }}</span>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm rounded-3">Close / Back</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm rounded-3">
+                        <i class="bi bi-box-arrow-right me-1"></i> Logout
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
