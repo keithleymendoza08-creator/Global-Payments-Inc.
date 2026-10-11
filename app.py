@@ -415,9 +415,22 @@ def reports():
 
     try:
         with db.cursor() as cur:
+            # Kunin ang aktibong user mula sa session gamit ang session['user_id']
             cur.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
             current_user = cur.fetchone()
 
+            if not current_user:
+                current_user = {
+                    'fullname': session.get('fullname', 'Employee'),
+                    'role': session.get('role', 'employee'),
+                    'employee_id': session.get('employee_id', 'GP-2026-001'),
+                    'department': 'Operations',
+                    'job_title': session.get('role', 'employee').title(),
+                    'work_location': 'Cubao Quezon City',
+                    'daily_rate': 3500
+                }
+
+            # Kunin ang timekeeping records para sa kasalukuyang nakalogin
             cur.execute("""
                 SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
                 FROM timekeeping t
@@ -430,6 +443,11 @@ def reports():
         print("Reports Route Error:", e)
         current_user = {
             'fullname': session.get('fullname', 'Employee'),
+            'role': session.get('role', 'employee'),
+            'employee_id': session.get('employee_id', 'GP-2026-001'),
+            'department': 'Operations',
+            'job_title': 'Staff',
+            'work_location': 'Cubao Quezon City',
             'daily_rate': 3500
         }
         

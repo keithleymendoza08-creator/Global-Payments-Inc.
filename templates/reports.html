@@ -273,22 +273,22 @@
                         </tbody>
                     </table>
 
-                    <!-- EMPLOYEE DETAILS TABLE -->
+                    <!-- EMPLOYEE DETAILS TABLE (DYNAMIC NOW) -->
                     <table style="width: 100%; margin-top: 10px; margin-bottom: 12px; font-size: 0.8rem;">
                         <tr>
                             <td style="width: 50%; vertical-align: top; border: none; padding-right: 15px;">
                                 <table style="width: 100%;">
-                                    <tr><td style="color: #64748B; padding: 3px 0; width: 40%;">Employee Name:</td><td style="font-weight: bold;">Keithley Modina</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Job Title:</td><td style="font-weight: 600;">Network Engineer</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Employee ID:</td><td style="font-weight: 600;">GP-200110</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Department:</td><td style="font-weight: 600;">IT & Infrastructure</td></tr>
+                                    <tr><td style="color: #64748B; padding: 3px 0; width: 40%;">Employee Name:</td><td style="font-weight: bold;">{{ user.fullname }}</td></tr>
+                                    <tr><td style="color: #64748B; padding: 3px 0;">Job Title:</td><td style="font-weight: 600;">{{ user.job_title if user.job_title else (user.role | title) }}</td></tr>
+                                    <tr><td style="color: #64748B; padding: 3px 0;">Employee ID:</td><td style="font-weight: 600;">{{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td></tr>
+                                    <tr><td style="color: #64748B; padding: 3px 0;">Department:</td><td style="font-weight: 600;">{{ user.department if user.department else 'Operations' }}</td></tr>
                                 </table>
                             </td>
                             <td style="width: 50%; vertical-align: top; border: none; padding-left: 15px; border-left: 1px solid #E2E8F0;">
                                 <table style="width: 100%;">
                                     <tr><td style="color: #64748B; padding: 3px 0; width: 40%;">Employer:</td><td style="font-weight: 600;">Global Payments Philippines</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Work Location:</td><td style="font-weight: 600;">Cubao Quezon City</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Daily Rate:</td><td style="font-weight: bold; color: var(--gp-blue);">₱ 3,500.00</td></tr>
+                                    <tr><td style="color: #64748B; padding: 3px 0;">Work Location:</td><td style="font-weight: 600;">{{ user.work_location if user.work_location else 'Cubao Quezon City' }}</td></tr>
+                                    <tr><td style="color: #64748B; padding: 3px 0;">Daily Rate:</td><td style="font-weight: bold; color: var(--gp-blue);">₱ {{ "{:,.2f}".format(user.daily_rate if user.daily_rate else 3500) }}</td></tr>
                                     <tr><td style="color: #64748B; padding: 3px 0;">Bank / Account:</td><td style="font-weight: 600;">SBC / 0000081158754</td></tr>
                                 </table>
                             </td>
