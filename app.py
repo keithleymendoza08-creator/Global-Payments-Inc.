@@ -97,7 +97,7 @@ def close(exception):
     if db:
         db.close()
 
-# ===== ROUTE REDIRECT: BUNGAD AGAD SA DASHBOARD PAG LOGGED IN =====
+# ===== ROUTE REDIRECT: DASHBOARD IF LOGGED IN =====
 @app.route('/')
 def index():
     if 'user_id' in session:
@@ -109,7 +109,7 @@ def login():
     if request.method == 'POST':
         db = get_db()
         with db.cursor() as cur:
-            cur.execute("SELECT * FROM users WHERE email=%s", (request.form['email'],))
+            cur.execute("SELECT * FROM users WHERE email=%s", (request.form['email'].strip(),))
             user = cur.fetchone()
         if user and check_password_hash(user['password'], request.form['password']):
             session['user_id'] = user['id']
@@ -120,6 +120,53 @@ def login():
             return redirect('/dashboard')
         flash('Invalid email or password', 'danger')
     return render_template('login.html')
+
+# ===== UTILITY ROUTE TO ADD USERS WITH HASHED PASSWORDS =====
+@app.route('/add-user-hashed', methods=['GET', 'POST'])
+def add_user_hashed():
+    """Temporary route to seed or insert users into Supabase with properly hashed passwords."""
+    if request.method == 'POST':
+        employee_id = request.form.get('employee_id', '').strip()
+        fullname = request.form.get('fullname', '').strip()
+        email = request.form.get('email', '').strip()
+        raw_password = request.form.get('password', '').strip()
+        role = request.form.get('role', 'employee').strip()
+        department = request.form.get('department', 'IT').strip()
+        job_title = request.form.get('job_title', 'Staff').strip()
+
+        if not email or not raw_password:
+            return "Email and password are required.", 400
+
+        hashed_password = generate_password_hash(raw_password)
+        db = get_db()
+        try:
+            with db.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO users (employee_id, fullname, email, password, role, department, job_title)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (employee_id, fullname, email, hashed_password, role, department, job_title))
+                db.commit()
+            return f"Successfully added user {email} with a hashed password! You can now <a href='/login'>login</a>."
+        except Exception as e:
+            return f"Error adding user: {e}", 500
+
+    return '''
+        <h2>Add User with Hashed Password</h2>
+        <form method="POST">
+            <input type="text" name="employee_id" placeholder="Employee ID"><br><br>
+            <input type="text" name="fullname" placeholder="Full Name" required><br><br>
+            <input type="email" name="email" placeholder="Email Address" required><br><br>
+            <input type="password" name="password" placeholder="Password" required><br><br>
+            <select name="role">
+                <option value="employee">Employee</option>
+                <option value="admin">Admin</option>
+                <option value="hr">HR</option>
+            </select><br><br>
+            <input type="text" name="department" placeholder="Department"><br><br>
+            <input type="text" name="job_title" placeholder="Job Title"><br><br>
+            <button type="submit">Add User</button>
+        </form>
+    '''
 
 # ===== REGISTER WITH OTP =====
 @app.route('/register', methods=['GET','POST'])
@@ -168,20 +215,81 @@ def register():
 
     return redirect(url_for("verify_otp", action="register"))
 
+# ===== FORGOT & RESET PASSWORD ROUTES =====
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        db = get_db()
+        with db.cursor() as cur:
+            cur.execute("SELECT * FROM users WHERE email=%s", (email,))
+            user = cur.fetchone()
+        
+        if user:
+            otp = str(random.randint(100000, 999999))
+            session['pending_reset'] = {
+                'email': email,
+                'otp': otp,
+                'otp_expiry': time.time() + 300
+            }
+            threading.Thread(target=send_otp_email_worker, args=(email, otp, "Password Reset")).start()
+            flash("We sent a password reset OTP code to your email address.", "info")
+            return redirect(url_for("verify_otp", action="reset"))
+        else:
+            flash("Email address not found in the system.", "danger")
+            
+    return render_template('forgot.html')
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    if 'pending_reset_verified' not in session:
+        flash("Unauthorized access. Please request a password reset first.", "warning")
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        new_password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        if len(new_password) < 8:
+            flash('Password must be at least 8 characters long.', 'danger')
+            return render_template('reset_password.html')
+
+        if confirm_password and new_password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return render_template('reset_password.html')
+
+        email = session['pending_reset_verified']['email']
+        db = get_db()
+        try:
+            with db.cursor() as cur:
+                cur.execute(
+                    "UPDATE users SET password = %s WHERE email = %s",
+                    (generate_password_hash(new_password), email)
+                )
+                db.commit()
+            session.pop('pending_reset_verified', None)
+            flash("Password successfully updated! Please log in with your new password.", "success")
+            return redirect(url_for('login'))
+        except Exception as e:
+            print("Reset Password Error:", e)
+            flash("Failed to update password. Please try again.", "danger")
+
+    return render_template('reset_password.html')
+
 @app.route('/verify-otp/<action>', methods=['GET', 'POST'])
 def verify_otp(action):
     session_key = 'pending_user' if action == 'register' else 'pending_reset'
 
     if session_key not in session:
         flash("Session expired or invalid access. Please try again.", "warning")
-        return redirect(url_for("register" if action == "register" else "reset_request"))
+        return redirect(url_for("register" if action == "register" else "forgot_password"))
 
     if request.method == "POST":
         user_otp = request.form.get("otp_code", "").strip()
         data = session[session_key]
 
         if time.time() > data.get('otp_expiry', 0):
-            flash("The OTP code has expired. Please click 'Resend OTP' to receive a new code.", "danger")
+            flash("The OTP code has expired. Please try again.", "danger")
             return render_template("otp_verify.html", action_url=url_for('verify_otp', action=action), action=action)
 
         if user_otp == data['otp']:
@@ -211,6 +319,10 @@ def verify_otp(action):
                     print("Registration Error:", e)
                     flash("Email or Employee ID already exists in the system.", "danger")
                     return redirect(url_for("register"))
+            elif action == "reset":
+                session['pending_reset_verified'] = session.pop(session_key)
+                flash("OTP verified successfully. Please enter your new password.", "success")
+                return redirect(url_for("reset_password"))
         else:
             flash("Invalid OTP code. Try again.", "danger")
 
@@ -221,7 +333,7 @@ def logout():
     session.clear()
     return redirect('/login')
 
-# ===== MAIN DASHBOARD (HANDLES SIDEBAR & HOME LANDING PAGE) =====
+# ===== MAIN DASHBOARD =====
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
