@@ -490,46 +490,48 @@ def payroll_processing():
             cur.execute("SELECT * FROM users ORDER BY id DESC")
             employees = cur.fetchall() or []
 
-            if request.method == 'POST':
-                for emp in employees:
-                    daily_rate = float(emp.get('daily_rate') or 1000.0)
-                    hourly_rate = daily_rate / 8.0
-                    
+            for emp in employees:
+                daily_rate = float(emp.get('daily_rate') or 1000.0)
+                hourly_rate = daily_rate / 8.0
+                
+                try:
                     cur.execute("""
                         SELECT * FROM timekeeping 
                         WHERE user_id = %s AND clock_out IS NOT NULL
                         AND clock_in::date >= %s::date AND clock_in::date <= %s::date
                     """, (emp['id'], period_start, period_end))
                     logs = cur.fetchall() or []
-                    
-                    days_worked = len(logs)
-                    basic_pay = days_worked * daily_rate
-                    night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
-                    overtime_pay = 0.00
-                    
-                    gross_pay = basic_pay + night_diff_pay + overtime_pay
-                    est_monthly = daily_rate * 22
-                    
-                    pagibig = 100.00 if gross_pay > 0 else 0.00
-                    philhealth = ((est_monthly * 0.025) / 2) if gross_pay > 0 else 0.00
-                    sss = ((est_monthly * 0.045) / 2) if gross_pay > 0 else 0.00
-                    total_deductions = pagibig + philhealth + sss
-                    
-                    net_pay = gross_pay - total_deductions if gross_pay > total_deductions else 0.00
+                except Exception:
+                    logs = []
+                
+                days_worked = len(logs)
+                basic_pay = days_worked * daily_rate
+                night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
+                overtime_pay = 0.00
+                
+                gross_pay = basic_pay + night_diff_pay + overtime_pay
+                est_monthly = daily_rate * 22
+                
+                pagibig = 100.00 if gross_pay > 0 else 0.00
+                philhealth = ((est_monthly * 0.025) / 2) if gross_pay > 0 else 0.00
+                sss = ((est_monthly * 0.045) / 2) if gross_pay > 0 else 0.00
+                total_deductions = pagibig + philhealth + sss
+                
+                net_pay = gross_pay - total_deductions if gross_pay > total_deductions else 0.00
 
-                    payroll_results.append({
-                        'employee_id': emp.get('employee_id', 'GP-2026-001'),
-                        'fullname': emp['fullname'],
-                        'department': emp.get('department', 'Operations'),
-                        'days_worked': days_worked,
-                        'basic_pay': basic_pay,
-                        'night_diff': night_diff_pay,
-                        'gross_pay': gross_pay,
-                        'deductions': total_deductions,
-                        'net_pay': net_pay
-                    })
+                payroll_results.append({
+                    'employee_id': emp.get('employee_id', 'GP-2026-001'),
+                    'fullname': emp.get('fullname', 'Unnamed'),
+                    'department': emp.get('department', 'Operations'),
+                    'days_worked': days_worked,
+                    'basic_pay': basic_pay,
+                    'night_diff': night_diff_pay,
+                    'gross_pay': gross_pay,
+                    'deductions': total_deductions,
+                    'net_pay': net_pay
+                })
     except Exception as e:
-        print("Payroll Processing Error:", e)
+        print("Payroll Processing Detailed Error:", e)
 
     return render_template(
         'payroll_processing.html',
@@ -538,6 +540,47 @@ def payroll_processing():
         period_start=period_start,
         period_end=period_end
     )
+
+@app.route('/leave-module', methods=['GET'])
+def leave_module():
+    if 'user_id' not in session:
+        return redirect('/login')
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
+        current_user = cur.fetchone()
+        cur.execute("SELECT * FROM leave_applications WHERE user_id=%s ORDER BY date_created DESC", (session['user_id'],))
+        my_leaves = cur.fetchall() or []
+    return render_template('leave_page.html', user=current_user, my_leaves=my_leaves)
+
+@app.route('/loans-module', methods=['GET'])
+def loans_module():
+    if 'user_id' not in session:
+        return redirect('/login')
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
+        current_user = cur.fetchone()
+        cur.execute("SELECT * FROM loan_applications WHERE user_id=%s ORDER BY date_applied DESC", (session['user_id'],))
+        my_loans = cur.fetchall() or []
+    return render_template('loans_page.html', user=current_user, my_loans=my_loans)
+
+@app.route('/pending-approvals', methods=['GET'])
+def pending_approvals():
+    if 'user_id' not in session:
+        return redirect('/login')
+    if session.get('role') == 'employee':
+        flash('Unauthorized access.', 'danger')
+        return redirect('/dashboard')
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("""
+            SELECT l.*, u.fullname, u.department, u.job_title FROM leave_applications l
+            JOIN users u ON u.id=l.user_id
+            WHERE l.status='Pending' ORDER BY l.date_created DESC
+        """)
+        pending_leaves = cur.fetchall() or []
+    return render_template('approvals_page.html', pending_leaves=pending_leaves)
 
 @app.route('/admin/assign_shift', methods=['POST'])
 def assign_shift():
