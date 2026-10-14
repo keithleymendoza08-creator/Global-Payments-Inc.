@@ -11,7 +11,9 @@ import random
 import requests
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, date
+import json
+import calendar
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'global-payments-hris-2026')
@@ -116,8 +118,99 @@ def create_loans_table():
     except Exception as e:
         print("Loan Table Migration Error:", e)
 
+def create_payroll_locks_table():
+    try:
+        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS payroll_locks (
+                    id SERIAL PRIMARY KEY,
+                    period_key TEXT UNIQUE NOT NULL,
+                    period_label TEXT NOT NULL,
+                    locked_by INT,
+                    locked_by_name TEXT,
+                    locked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    snapshot TEXT
+                );
+            """)
+            conn.commit()
+        conn.close()
+    except Exception as e:
+        print("Payroll Locks Table Migration Error:", e)
+
 migrate_users_table()
 create_loans_table()
+create_payroll_locks_table()
+
+HR_ROLES = ['admin', 'hr_manager', 'supervisor', 'hr']
+
+def get_payroll_period(d):
+    """Semi-monthly cut-off: 1-15 and 16-end of month. Returns (key, label, start, end)."""
+    if isinstance(d, datetime):
+        d = d.date()
+    last_day = calendar.monthrange(d.year, d.month)[1]
+    if d.day <= 15:
+        return (f"{d:%Y-%m}-A", f"{d:%b} 1-15, {d.year}",
+                date(d.year, d.month, 1), date(d.year, d.month, 15))
+    return (f"{d:%Y-%m}-B", f"{d:%b} 16-{last_day}, {d.year}",
+            date(d.year, d.month, 16), date(d.year, d.month, last_day))
+
+def parse_period_date(value):
+    try:
+        return datetime.strptime((value or '')[:10], '%Y-%m-%d').date()
+    except Exception:
+        return datetime.now().date()
+
+def _log_date(log):
+    v = log.get('clock_in')
+    if isinstance(v, datetime):
+        return v.date()
+    if isinstance(v, date):
+        return v
+    try:
+        return datetime.strptime(str(v)[:10], '%Y-%m-%d').date()
+    except Exception:
+        return None
+
+def compute_payroll_results(cur, employees, start=None, end=None):
+    payroll_results = []
+    for emp in employees:
+        daily_rate = float(emp.get('daily_rate') or 1000.0)
+        hourly_rate = daily_rate / 8.0
+        try:
+            cur.execute("""
+                SELECT * FROM timekeeping 
+                WHERE user_id = %s AND clock_out IS NOT NULL
+            """, (emp['id'],))
+            logs = cur.fetchall() or []
+        except Exception:
+            logs = []
+
+        if start and end:
+            logs = [l for l in logs if _log_date(l) and start <= _log_date(l) <= end]
+
+        days_worked = len(logs)
+        basic_pay = days_worked * daily_rate
+        night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
+        gross_pay = basic_pay + night_diff_pay
+        est_monthly = daily_rate * 22
+        pagibig = 100.00 if gross_pay > 0 else 0.00
+        philhealth = ((est_monthly * 0.025) / 2) if gross_pay > 0 else 0.00
+        sss = ((est_monthly * 0.045) / 2) if gross_pay > 0 else 0.00
+        total_deductions = pagibig + philhealth + sss
+        net_pay = gross_pay - total_deductions if gross_pay > total_deductions else 0.00
+
+        payroll_results.append({
+            'employee_id': emp.get('employee_id', 'GP-2026-001'),
+            'fullname': emp.get('fullname', 'Unnamed'),
+            'department': emp.get('department', 'Operations'),
+            'days_worked': days_worked,
+            'basic_pay': basic_pay,
+            'gross_pay': gross_pay,
+            'deductions': total_deductions,
+            'net_pay': net_pay
+        })
+    return payroll_results
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -355,6 +448,11 @@ def dashboard():
 
             pending_leaves_list = []
             payroll_results = []
+            payroll_locked = False
+            payroll_lock_info = None
+            payroll_period_date = parse_period_date(request.args.get('period_date'))
+            payroll_period_key, payroll_period_label, p_start, p_end = get_payroll_period(payroll_period_date)
+            payroll_locks = []
 
             if session.get('role') != 'employee':
                 cur.execute("""
@@ -364,39 +462,27 @@ def dashboard():
                 """)
                 pending_leaves_list = cur.fetchall() or []
 
-                for emp in employees:
-                    daily_rate = float(emp.get('daily_rate') or 1000.0)
-                    hourly_rate = daily_rate / 8.0
-                    try:
-                        cur.execute("""
-                            SELECT * FROM timekeeping 
-                            WHERE user_id = %s AND clock_out IS NOT NULL
-                        """, (emp['id'],))
-                        logs = cur.fetchall() or []
-                    except Exception:
-                        logs = []
-                    
-                    days_worked = len(logs)
-                    basic_pay = days_worked * daily_rate
-                    night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
-                    gross_pay = basic_pay + night_diff_pay
-                    est_monthly = daily_rate * 22
-                    pagibig = 100.00 if gross_pay > 0 else 0.00
-                    philhealth = ((est_monthly * 0.025) / 2) if gross_pay > 0 else 0.00
-                    sss = ((est_monthly * 0.045) / 2) if gross_pay > 0 else 0.00
-                    total_deductions = pagibig + philhealth + sss
-                    net_pay = gross_pay - total_deductions if gross_pay > total_deductions else 0.00
+                payroll_results = compute_payroll_results(cur, employees, p_start, p_end)
 
-                    payroll_results.append({
-                        'employee_id': emp.get('employee_id', 'GP-2026-001'),
-                        'fullname': emp.get('fullname', 'Unnamed'),
-                        'department': emp.get('department', 'Operations'),
-                        'days_worked': days_worked,
-                        'basic_pay': basic_pay,
-                        'gross_pay': gross_pay,
-                        'deductions': total_deductions,
-                        'net_pay': net_pay
-                    })
+                try:
+                    cur.execute("SELECT * FROM payroll_locks WHERE period_key=%s", (payroll_period_key,))
+                    lock_row = cur.fetchone()
+                except Exception:
+                    db.rollback()
+                    lock_row = None
+                try:
+                    cur.execute("SELECT period_key, period_label, locked_by_name, locked_at FROM payroll_locks ORDER BY period_key DESC LIMIT 12")
+                    payroll_locks = cur.fetchall() or []
+                except Exception:
+                    db.rollback()
+                    payroll_locks = []
+                if lock_row:
+                    payroll_locked = True
+                    payroll_lock_info = lock_row
+                    try:
+                        payroll_results = json.loads(lock_row.get('snapshot') or '[]')
+                    except Exception:
+                        pass
 
             cur.execute("""
                 SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
@@ -420,7 +506,13 @@ def dashboard():
             search_q=q,
             current_month_year=current_month_year,
             active_tab=active_tab,
-            payroll_results=payroll_results
+            payroll_results=payroll_results,
+            payroll_locked=payroll_locked,
+            payroll_lock_info=payroll_lock_info,
+            payroll_period_label=payroll_period_label,
+            payroll_period_date=payroll_period_date.isoformat(),
+            payroll_period_key=payroll_period_key,
+            payroll_locks=payroll_locks
         )
 
     except Exception as e:
@@ -444,7 +536,13 @@ def dashboard():
             search_q=q,
             current_month_year=current_month_year,
             active_tab='home',
-            payroll_results=[]
+            payroll_results=[],
+            payroll_locked=False,
+            payroll_lock_info=None,
+            payroll_period_label=get_payroll_period(now)[1],
+            payroll_period_date=now.date().isoformat(),
+            payroll_period_key=get_payroll_period(now)[0],
+            payroll_locks=[]
         )
 
 @app.route('/reports')
@@ -604,6 +702,63 @@ def apply_loan():
         flash('Failed to submit loan application.', 'danger')
 
     return redirect('/dashboard?tab=loans')
+
+@app.route('/admin/lock_payroll', methods=['POST'])
+def lock_payroll():
+    if session.get('role') not in HR_ROLES:
+        flash('Unauthorized access for payroll locking.', 'danger')
+        return redirect('/dashboard')
+
+    period_date = parse_period_date(request.form.get('period_date'))
+    key, label, start, end = get_payroll_period(period_date)
+    back = f"/dashboard?tab=payroll&period_date={period_date.isoformat()}"
+
+    if start > datetime.now().date():
+        flash('You cannot lock a payroll period that has not started yet.', 'warning')
+        return redirect(back)
+
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            cur.execute("SELECT 1 FROM payroll_locks WHERE period_key=%s", (key,))
+            if cur.fetchone():
+                flash(f'Payroll for {label} is already locked.', 'warning')
+                return redirect(back)
+
+            cur.execute("SELECT * FROM users ORDER BY id DESC")
+            employees = cur.fetchall() or []
+            results = compute_payroll_results(cur, employees, start, end)
+            cur.execute("""
+                INSERT INTO payroll_locks (period_key, period_label, locked_by, locked_by_name, snapshot)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (key, label, session['user_id'], session.get('fullname', ''), json.dumps(results)))
+            db.commit()
+        flash(f'Payroll for {label} has been locked.', 'success')
+    except Exception as e:
+        db.rollback()
+        print("Lock Payroll Error:", e)
+        flash('Failed to lock payroll period.', 'danger')
+    return redirect(back)
+
+@app.route('/admin/unlock_payroll', methods=['POST'])
+def unlock_payroll():
+    if session.get('role') not in HR_ROLES:
+        flash('Unauthorized access for payroll unlocking.', 'danger')
+        return redirect('/dashboard')
+
+    period_date = parse_period_date(request.form.get('period_date'))
+    key, label, start, end = get_payroll_period(period_date)
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            cur.execute("DELETE FROM payroll_locks WHERE period_key=%s", (key,))
+            db.commit()
+        flash(f'Payroll for {label} has been unlocked.', 'success')
+    except Exception as e:
+        db.rollback()
+        print("Unlock Payroll Error:", e)
+        flash('Failed to unlock payroll period.', 'danger')
+    return redirect(f"/dashboard?tab=payroll&period_date={period_date.isoformat()}")
 
 @app.route('/admin/approve_leave/<int:id>')
 def approve_leave(id):
