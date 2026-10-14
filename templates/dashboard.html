@@ -244,6 +244,14 @@
     }
     .event-chip.today-chip { background: #DCFCE7; color: #166534; }
 
+    .glance-tile {
+        text-align: center; padding: 12px 8px; border-radius: 12px; background: #FFFFFF;
+        border: 1px solid #E2E8F0; border-top: 3px solid; box-shadow: 0 1px 3px rgba(15,23,42,.05);
+    }
+    .glance-tile i { font-size: 1.3rem; }
+    .glance-num { font-size: 1.35rem; font-weight: 800; color: var(--gp-navy); line-height: 1.2; }
+    .glance-lbl { font-size: 0.72rem; color: #64748B; font-weight: 600; }
+
     .legend-dot {
         width: 10px;
         height: 10px;
@@ -359,7 +367,7 @@
             <div class="row g-4 mb-5">
                 <!-- CORPORATE PAYROLL HERO SECTION -->
                 <div class="col-lg-8">
-                    <div class="payroll-hero-card h-100" id="payroll-info">
+                    <div class="payroll-hero-card h-100 d-flex flex-column" id="payroll-info">
                         <div class="row align-items-center g-4">
                             <div class="col-lg-4 text-center">
                                 <div class="payroll-icon-wrapper">
@@ -387,6 +395,48 @@
                                         <div><strong>Approved Time & Payments:</strong> Processing EIS-approved hours, leaves, night diff, rice subsidies, bonuses, and other pay elements.</div>
                                     </li>
                                 </ul>
+                            </div>
+                        </div>
+
+                        <!-- AT A GLANCE -->
+                        <div class="mt-auto pt-4">
+                            <hr class="mt-0 mb-3">
+                            <div class="fw-bold small text-uppercase mb-2" style="color: #64748B; letter-spacing: .04em;">At a Glance</div>
+                            {% if session.get('role') == 'employee' %}
+                            {% set g_vl = user.vl_balance if user.vl_balance is defined and user.vl_balance is not none else 15 %}
+                            {% set g_sl = user.sl_balance if user.sl_balance is defined and user.sl_balance is not none else 15 %}
+                            {% set g_el = user.el_balance if user.el_balance is defined and user.el_balance is not none else 5 %}
+                            <div class="row g-3 mb-3">
+                                <div class="col-4"><div class="glance-tile" style="border-color:#0EA5E9;"><i class="bi bi-brightness-high" style="color:#0EA5E9;"></i><div class="glance-num">{{ '%g'|format(g_vl|float) }}</div><div class="glance-lbl">Vacation Leave</div></div></div>
+                                <div class="col-4"><div class="glance-tile" style="border-color:#22C55E;"><i class="bi bi-heart-pulse" style="color:#22C55E;"></i><div class="glance-num">{{ '%g'|format(g_sl|float) }}</div><div class="glance-lbl">Sick Leave</div></div></div>
+                                <div class="col-4"><div class="glance-tile" style="border-color:#F59E0B;"><i class="bi bi-exclamation-triangle" style="color:#F59E0B;"></i><div class="glance-num">{{ '%g'|format(g_el|float) }}</div><div class="glance-lbl">Emergency Leave</div></div></div>
+                            </div>
+                            {% else %}
+                            <div class="row g-3 mb-3">
+                                <div class="col-4"><div class="glance-tile" style="border-color:#0EA5E9;"><i class="bi bi-people" style="color:#0EA5E9;"></i><div class="glance-num">{{ total_employees }}</div><div class="glance-lbl">Employees</div></div></div>
+                                <div class="col-4"><div class="glance-tile" style="border-color:#F59E0B;"><i class="bi bi-hourglass-split" style="color:#F59E0B;"></i><div class="glance-num">{{ pending_leaves_count }}</div><div class="glance-lbl">Pending Leaves</div></div></div>
+                                <div class="col-4"><div class="glance-tile" style="border-color:#22C55E;"><i class="bi bi-cash-stack" style="color:#22C55E;"></i><div class="glance-num" style="font-size:1.05rem;">₱{{ "{:,.2f}".format((total_payroll or 0)|float) }}</div><div class="glance-lbl">Total Net Payroll</div></div></div>
+                            </div>
+                            {% endif %}
+
+                            <!-- CURRENT CUT-OFF -->
+                            <div class="p-3 rounded-3 mb-3" style="background:#F8FAFC; border:1px solid #E2E8F0;">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small fw-bold" style="color: var(--gp-navy);"><i class="bi bi-hourglass-bottom me-1"></i>Current Cut-Off: <span id="cutoffLabel"></span></span>
+                                    <span class="small text-muted" id="cutoffDaysLeft"></span>
+                                </div>
+                                <div class="progress" style="height: 8px;"><div class="progress-bar" id="cutoffBar" role="progressbar" style="width:0%; background-color: var(--gp-blue);"></div></div>
+                                <div class="small text-muted mt-1"><i class="bi bi-cash-coin me-1"></i>Next payday: <strong id="nextPayday"></strong></div>
+                            </div>
+
+                            <!-- QUICK ACTIONS -->
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-3" data-bs-toggle="modal" data-bs-target="#timekeepingModal"><i class="bi bi-clock me-1"></i>Time-In / Time-Out</button>
+                                <a href="{{ url_for('dashboard', tab='leave') }}" class="btn btn-sm btn-outline-primary rounded-3"><i class="bi bi-calendar-check me-1"></i>File Leave</a>
+                                {% if session.get('role') != 'employee' %}
+                                <a href="{{ url_for('dashboard', tab='approvals') }}" class="btn btn-sm btn-outline-primary rounded-3"><i class="bi bi-check2-square me-1"></i>Multi-Level Approvals</a>
+                                {% endif %}
+                                <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-sm btn-outline-primary rounded-3"><i class="bi bi-download me-1"></i>{{ 'My Payslip (CSV)' if session.get('role') == 'employee' else 'Payroll Register (CSV)' }}</a>
                             </div>
                         </div>
                     </div>
@@ -593,6 +643,59 @@
         <!-- 3. LOANS & DEDUCTIONS TAB -->
         <div id="loans-section" class="content-section {% if active_tab == 'loans' %}active{% endif %}">
             <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-credit-card me-2"></i>Payroll Cut-Off & Deductions Module</h4>
+
+            {% set dr = (user.daily_rate or 1000)|float %}
+            {% set monthly = dr * 22 %}
+            {% set d_sss = monthly * 0.045 / 2 %}
+            {% set d_phil = monthly * 0.025 / 2 %}
+            {% set d_pagibig = 100.0 %}
+            {% set d_total = d_sss + d_phil + d_pagibig %}
+            {% set semi_gross = monthly / 2 %}
+            <div class="calendar-card mb-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-receipt me-2"></i>Pre-Tax Deductions (per Cut-Off)</h6>
+                        <div class="small text-muted">Statutory contributions taken out before withholding tax. Based on a daily rate of <strong>₱{{ "{:,.2f}".format(dr) }}</strong> x 22 working days per month, split per semi-monthly cut-off.</div>
+                    </div>
+                    <span class="badge bg-light text-dark border">Basic pay per cut-off: ₱{{ "{:,.2f}".format(semi_gross) }}</span>
+                </div>
+                <div class="row g-3 text-center">
+                    <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">SSS (4.5%)</div><div class="fw-bold text-danger">₱{{ "{:,.2f}".format(d_sss) }}</div></div></div>
+                    <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">PhilHealth (2.5%)</div><div class="fw-bold text-danger">₱{{ "{:,.2f}".format(d_phil) }}</div></div></div>
+                    <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Pag-IBIG (fixed)</div><div class="fw-bold text-danger">₱{{ "{:,.2f}".format(d_pagibig) }}</div></div></div>
+                    <div class="col-6 col-md-3"><div class="p-2 rounded-3 border" style="background:#FEF2F2;"><div class="small text-muted">Total Pre-Tax</div><div class="fw-bold text-danger">₱{{ "{:,.2f}".format(d_total) }}</div></div></div>
+                </div>
+                <div class="small text-muted mt-3">Taxable income after pre-tax deductions: <strong style="color: var(--gp-navy);">₱{{ "{:,.2f}".format(semi_gross - d_total) }}</strong> per cut-off</div>
+
+                {% if session.get('role') != 'employee' and employees %}
+                <hr>
+                <div class="small fw-bold mb-2" style="color: var(--gp-navy);">All Employees</div>
+                <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
+                    <table class="table table-bordered table-sm text-center align-middle mb-0">
+                        <thead class="table-light">
+                            <tr><th>Employee</th><th>Daily Rate</th><th>SSS</th><th>PhilHealth</th><th>Pag-IBIG</th><th>Total Pre-Tax</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for e in employees %}
+                            {% set e_dr = (e.daily_rate or 1000)|float %}
+                            {% set e_m = e_dr * 22 %}
+                            {% set e_sss = e_m * 0.045 / 2 %}
+                            {% set e_phil = e_m * 0.025 / 2 %}
+                            <tr>
+                                <td class="text-start fw-semibold">{{ e.fullname }}</td>
+                                <td>₱{{ "{:,.2f}".format(e_dr) }}</td>
+                                <td>₱{{ "{:,.2f}".format(e_sss) }}</td>
+                                <td>₱{{ "{:,.2f}".format(e_phil) }}</td>
+                                <td>₱100.00</td>
+                                <td class="fw-bold text-danger">₱{{ "{:,.2f}".format(e_sss + e_phil + 100) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+
             <div class="row g-4">
                 <div class="col-lg-5">
                     <form action="{{ url_for('apply_loan') }}" method="POST" class="border p-4 rounded bg-light shadow-sm">
@@ -1021,6 +1124,28 @@ document.addEventListener('DOMContentLoaded', function() {
             bootstrap.Modal.getOrCreateInstance(regEl).hide();
         });
     }
+
+    // Current cut-off progress + next payday
+    (function() {
+        const lbl = document.getElementById('cutoffLabel');
+        if (!lbl) return;
+        const now = new Date(); now.setHours(0, 0, 0, 0);
+        const y = now.getFullYear(), m = now.getMonth();
+        const last = new Date(y, m + 1, 0).getDate();
+        const first = now.getDate() <= 15;
+        const startD = first ? 1 : 16, endD = first ? 15 : last;
+        const mon = now.toLocaleDateString('en-US', { month: 'short' });
+        lbl.textContent = mon + ' ' + startD + '-' + endD;
+        const total = endD - startD + 1;
+        const elapsed = now.getDate() - startD + 1;
+        document.getElementById('cutoffBar').style.width = Math.min(100, Math.round(elapsed / total * 100)) + '%';
+        const left = endD - now.getDate();
+        document.getElementById('cutoffDaysLeft').textContent = left === 0 ? 'Cut-off ends today' : left + ' day' + (left === 1 ? '' : 's') + ' left';
+        const cands = [new Date(y, m, 15), new Date(y, m, Math.min(30, last)), new Date(y, m + 1, 15)];
+        const next = cands.find(d => d >= now);
+        const diff = Math.round((next - now) / 86400000);
+        document.getElementById('nextPayday').textContent = next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + (diff === 0 ? ' (today)' : ' (in ' + diff + ' day' + (diff === 1 ? '' : 's') + ')');
+    })();
 
     const calendarContainer = document.getElementById('calendarDaysContainer');
     if (!calendarContainer) return;
