@@ -407,8 +407,8 @@
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">15-Oct-2026</td>
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">01-Oct-2026</td>
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">15-Oct-2026</td>
-                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold text-primary">₱ {{ "{:,.2f}".format(daily) }}</td>
-                                <td style="padding: 3px;">₱ {{ "{:,.2f}".format(est_monthly) }}</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold text-primary">₱ {{ "{:,.2f}".format(daily|float) }}</td>
+                                <td style="padding: 3px;">₱ {{ "{:,.2f}".format(est_monthly|float) }}</td>
                             </tr>
                         </table>
                     </div>
@@ -428,10 +428,10 @@
                             </tr>
                             <tr>
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">This Pay Period</td>
-                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
-                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="text-danger">₱ {{ "{:,.2f}".format(total_pretax_deductions) }}</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff|float) }}</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="text-danger">₱ {{ "{:,.2f}".format(total_pretax_deductions|float) }}</td>
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">₱ 0.00</td>
-                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(net_take_home) }}</td>
+                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(net_take_home|float) }}</td>
                             </tr>
                         </table>
                     </div>
@@ -454,8 +454,8 @@
                                 <tbody>
                                     <tr>
                                         <td style="padding: 2px 6px;">Regular Base Pay ({{ completed_days.count }} Days)</td>
-                                        <td style="padding: 2px 6px;" class="text-end">{{ "{:,.2f}".format(total_hours) }}</td>
-                                        <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
+                                        <td style="padding: 2px 6px;" class="text-end">{{ "{:,.2f}".format(total_hours|float) }}</td>
+                                        <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff|float) }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">Meal Allowance Non Taxable</td>
@@ -502,15 +502,15 @@
                                 <tbody>
                                     <tr>
                                         <td style="padding: 2px 6px;">HDMF EE Contribution (Pag-IBIG)</td>
-                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(pagibig_ee) }}</td>
+                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(pagibig_ee|float) }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">PHILHEALTH EE Contribution</td>
-                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(philhealth_ee) }}</td>
+                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(philhealth_ee|float) }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">SSS EE Contribution</td>
-                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(sss_ee) }}</td>
+                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(sss_ee|float) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -598,7 +598,7 @@
                                 <td style="padding: 3px;">Savings</td>
                                 <td style="padding: 3px;">Cubao QC</td>
                                 <td style="padding: 3px;">0000******1234</td>
-                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(net_take_home) }}</td>
+                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(net_take_home|float) }}</td>
                             </tr>
                         </table>
                     </div>
@@ -611,11 +611,11 @@
                         <table class="w-100" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
                             <tr>
                                 <td style="padding: 2px 6px; width: 70%;">Non Taxable Earnings YTD</td>
-                                <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
+                                <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(gross_cutoff|float) }}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 2px 6px;">Pre Tax Deductions YTD</td>
-                                <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(total_pretax_deductions) }}</td>
+                                <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(total_pretax_deductions|float) }}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 2px 6px;">Total Tax Deductions YTD</td>
@@ -623,7 +623,7 @@
                             </tr>
                             <tr>
                                 <td style="padding: 2px 6px;" class="fw-bold">Total Earnings YTD</td>
-                                <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
+                                <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff|float) }}</td>
                             </tr>
                         </table>
                     </div>
@@ -806,25 +806,25 @@
                                         {% endfor %}
                                     {% endif %}
 
-                                    {% set emp_basic = emp_completed_days.count * emp_daily %}
+                                    {% set emp_basic = (emp_completed_days.count|float) * (emp_daily|float) %}
                                     {% set emp_ot = 0.00 %}
                                     
-                                    {% set emp_est_monthly = emp_daily * 22 %}
+                                    {% set emp_est_monthly = (emp_daily|float) * 22 %}
                                     {% set emp_pagibig = 100.00 if emp_basic > 0 else 0.00 %}
                                     {% set emp_philhealth = ((emp_est_monthly * 0.025) / 2) if emp_basic > 0 else 0.00 %}
                                     {% set emp_sss = ((emp_est_monthly * 0.045) / 2) if emp_basic > 0 else 0.00 %}
-                                    {% set emp_deductions = emp_pagibig + emp_philhealth + emp_sss %}
+                                    {% set emp_deductions = (emp_pagibig|float) + (emp_philhealth|float) + (emp_sss|float) %}
                                     
-                                    {% set emp_net = emp_basic + emp_ot - emp_deductions if (emp_basic + emp_ot) > emp_deductions else 0.00 %}
+                                    {% set emp_net = ((emp_basic|float) + (emp_ot|float) - (emp_deductions|float)) if ((emp_basic|float) + (emp_ot|float)) > (emp_deductions|float) else 0.00 %}
 
                                     <tr>
                                         <td>{{ emp.employee_id if emp.employee_id else 'GP-2026-001' }}</td>
                                         <td class="fw-semibold">{{ emp.fullname }}</td>
                                         <td>{{ emp.department if emp.department else 'Operations' }}</td>
-                                        <td class="text-end">₱ {{ "{:,.2f}".format(emp_basic) }}</td>
-                                        <td class="text-end">₱ {{ "{:,.2f}".format(emp_ot) }}</td>
-                                        <td class="text-end text-danger">₱ {{ "{:,.2f}".format(emp_deductions) }}</td>
-                                        <td class="text-end fw-bold text-success">₱ {{ "{:,.2f}".format(emp_net) }}</td>
+                                        <td class="text-end">₱ {{ "{:,.2f}".format(emp_basic|float) }}</td>
+                                        <td class="text-end">₱ {{ "{:,.2f}".format(emp_ot|float) }}</td>
+                                        <td class="text-end text-danger">₱ {{ "{:,.2f}".format(emp_deductions|float) }}</td>
+                                        <td class="text-end fw-bold text-success">₱ {{ "{:,.2f}".format(emp_net|float) }}</td>
                                     </tr>
                                 {% endfor %}
                             {% else %}
