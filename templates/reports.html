@@ -274,116 +274,339 @@
     </div>
 </div>
 
-<!-- PAYSLIP MODAL (UPDATED CORPORATE VERSION) -->
+<!-- PAYSLIP MODAL (ALORICA STYLE LAYOUT) -->
 <div class="modal fade" id="viewPayslipModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header text-white no-print" style="background-color: var(--gp-navy);">
-                <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Official Employee Payslip Statement</h6>
+                <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Official Employee Payslip</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <div class="document-paper shadow-sm" id="printablePayslip">
-                    <!-- COMPANY HEADER -->
-                    <table style="width: 100%; margin-bottom: 16px; border-bottom: 2px solid var(--gp-navy); padding-bottom: 10px;">
-                        <tr>
-                            <td style="border: none; padding: 0;">
-                                <div style="display: flex; align-items: center;">
-                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
-                                    <div>
-                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS ASIA-PACIFIC PH INC.</h5>
-                                        <span style="color: #64748B; font-size: 0.72rem;">10ari Tower, Cubao, Quezon City • Human Resources & Payroll Division</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td style="border: none; text-align: right; padding: 0;">
-                                <h5 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">EMPLOYEE PAYSLIP</h5>
-                                <span class="badge bg-secondary" style="font-size: 0.65rem;">CONFIDENTIAL</span>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <!-- EMPLOYEE & PAY PERIOD INFO GRID -->
-                    <table style="width: 100%; margin-bottom: 15px; font-size: 0.82rem; background: #F8FAFC; padding: 12px; border-radius: 6px; border: 1px solid #E2E8F0;">
-                        <tr>
-                            <td style="border: none; padding: 4px; width: 50%;"><strong>Employee Name:</strong> {{ user.fullname }}</td>
-                            <td style="border: none; padding: 4px; width: 50%;"><strong>Pay Period:</strong> {{ payslip.period if payslip and payslip.period else 'October 01 - October 15, 2026' }}</td>
-                        </tr>
-                        <tr>
-                            <td style="border: none; padding: 4px;"><strong>Employee ID:</strong> {{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td>
-                            <td style="border: none; padding: 4px;"><strong>Payout Date:</strong> {{ payslip.payout_date if payslip and payslip.payout_date else 'October 15, 2026' }}</td>
-                        </tr>
-                        <tr>
-                            <td style="border: none; padding: 4px;"><strong>Department / LOB:</strong> {{ user.department if user.department else 'Operations / IT' }}</td>
-                            <td style="border: none; padding: 4px;"><strong>Tax Status / SSS TIN:</strong> SSS: -- | TIN: --</td>
-                        </tr>
-                    </table>
-
-                    <!-- EARNINGS & DEDUCTIONS BREAKDOWN TABLE -->
-                    <div class="doc-section-title">COMPENSATION & STATUTORY DEDUCTIONS SUMMARY</div>
-                    <table class="doc-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 35%;">Earnings / Allowances</th>
-                                <th style="width: 15%;" class="text-end">Amount (₱)</th>
-                                <th style="width: 35%;">Statutory Deductions</th>
-                                <th style="width: 15%;" class="text-end">Amount (₱)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Basic Pay</td>
-                                <td class="text-end">{{ payslip.basic_pay if payslip and payslip.basic_pay else '0.00' }}</td>
-                                <td>SSS Contribution</td>
-                                <td class="text-end">{{ payslip.sss if payslip and payslip.sss else '0.00' }}</td>
-                            </tr>
-                            <tr>
-                                <td>Overtime Pay (OT)</td>
-                                <td class="text-end">{{ payslip.overtime if payslip and payslip.overtime else '0.00' }}</td>
-                                <td>PhilHealth Contribution</td>
-                                <td class="text-end">{{ payslip.philhealth if payslip and payslip.philhealth else '0.00' }}</td>
-                            </tr>
-                            <tr>
-                                <td>Night Differential (ND)</td>
-                                <td class="text-end">{{ payslip.night_diff if payslip and payslip.night_diff else '0.00' }}</td>
-                                <td>Pag-IBIG Fund</td>
-                                <td class="text-end">{{ payslip.pagibig if payslip and payslip.pagibig else '0.00' }}</td>
-                            </tr>
-                            <tr>
-                                <td>Holiday / Premium Pay</td>
-                                <td class="text-end">{{ payslip.holiday_pay if payslip and payslip.holiday_pay else '0.00' }}</td>
-                                <td>Withholding Tax (BIR)</td>
-                                <td class="text-end">{{ payslip.tax if payslip and payslip.tax else '0.00' }}</td>
-                            </tr>
-                            <tr>
-                                <td>Allowances / Adjustments</td>
-                                <td class="text-end">{{ payslip.allowances if payslip and payslip.allowances else '0.00' }}</td>
-                                <td>Other Deductions / Loans</td>
-                                <td class="text-end">{{ payslip.other_deductions if payslip and payslip.other_deductions else '0.00' }}</td>
-                            </tr>
-                            <tr style="background-color: #F8FAFC; font-weight: bold;">
-                                <td>Gross Earnings Total:</td>
-                                <td class="text-end text-success">{{ payslip.gross_pay if payslip and payslip.gross_pay else '₱ 0.00' }}</td>
-                                <td>Total Deductions:</td>
-                                <td class="text-end text-danger">{{ payslip.total_deductions if payslip and payslip.total_deductions else '₱ 0.00' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- NET TAKE HOME PAY BOX -->
-                    <div style="background: #E0F2FE; border: 1px solid #7DD3FC; padding: 10px 14px; border-radius: 6px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <span style="font-weight: bold; color: var(--gp-navy); font-size: 0.88rem; display: block;">NET TAKE-HOME PAY:</span>
-                            <span style="color: #0369A1; font-size: 0.72rem;">(Total Gross Earnings minus Total Statutory & Other Deductions)</span>
+                <div class="document-paper shadow-sm" id="printablePayslip" style="font-family: Arial, sans-serif; font-size: 0.75rem; color: #1E293B; background: #FFF; padding: 25px; border: 1px solid #CBD5E1;">
+                    
+                    <!-- LOGO & TOP TITLE HEADER -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 32px; width: auto; margin-right: 10px;">
+                            <h4 class="fw-bold mb-0" style="color: #002B49; letter-spacing: -0.5px;">global payments</h4>
                         </div>
-                        <span style="font-weight: bold; color: #0369A1; font-size: 1.15rem;">{{ payslip.net_pay if payslip and payslip.net_pay else '₱ 0.00' }}</span>
+                        <div class="text-end">
+                            <h5 class="fw-bold mb-0 text-uppercase" style="color: #334155;">Payslip</h5>
+                            <span class="text-muted" style="font-size: 0.7rem;">Page 1</span>
+                        </div>
                     </div>
 
-                    <!-- FOOTER NOTES & SIGNATURE -->
-                    <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; color: #64748B; font-size: 0.72rem;">
-                        <span>This is an official system-generated document from Global Payments HRIS. No signature required.</span>
-                        <span>Generated on: October 15, 2026</span>
+                    <!-- TWO-COLUMN HEADER BOXES (EMPLOYEE & EMPLOYER INFO) -->
+                    <div class="row g-2 mb-2">
+                        <!-- Left Box: Employee Info -->
+                        <div class="col-6">
+                            <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                                EMPLOYEE INFORMATION
+                            </div>
+                            <table class="w-100" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none; background: #F8FAFC; padding: 4px;">
+                                <tr>
+                                    <td style="width: 38%; padding: 2px 6px;" class="fw-bold">Employee Full Name</td>
+                                    <td style="padding: 2px 6px;">{{ user.fullname }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Job Title</td>
+                                    <td style="padding: 2px 6px;">{{ user.job_title if user.job_title else 'Operations Representative' }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Employee Number</td>
+                                    <td style="padding: 2px 6px;">{{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Latest Hire Date</td>
+                                    <td style="padding: 2px 6px;">{{ user.hire_date if user.hire_date else '01-Jan-2026' }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Assignment Category</td>
+                                    <td style="padding: 2px 6px;">Fulltime-Regular</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Employee Address</td>
+                                    <td style="padding: 2px 6px;">{{ user.address if user.address else 'Cubao, Quezon City, Metro Manila' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Right Box: Employer Info -->
+                        <div class="col-6">
+                            <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                                EMPLOYER INFORMATION
+                            </div>
+                            <table class="w-100" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none; background: #F8FAFC; padding: 4px;">
+                                <tr>
+                                    <td style="width: 38%; padding: 2px 6px;" class="fw-bold">Employer Name</td>
+                                    <td style="padding: 2px 6px;">Global Payments Asia-Pacific Ph Inc.</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Pay Basis</td>
+                                    <td style="padding: 2px 6px;">Semi-Monthly Non Exempt</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Location</td>
+                                    <td style="padding: 2px 6px;">10ari Tower, Cubao QC, PHP</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Payroll Group</td>
+                                    <td style="padding: 2px 6px;">GlobalPayments Biweekly</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 6px;" class="fw-bold">Employer Address</td>
+                                    <td style="padding: 2px 6px;">EDSA cor. Aurora Blvd, Cubao, Quezon City, 1109 PH</td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
+
+                    <!-- PAY PERIOD & SALARY BAR -->
+                    <div class="mb-2">
+                        <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                            Pay Period and Salary
+                        </div>
+                        <table class="w-100 text-center" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                            <tr style="background-color: #E2E8F0; font-weight: bold;">
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">Pay Period</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">Payment Date</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">Pay Begin Date</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">Pay End Date</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">Daily Rate / Pay Rate</td>
+                                <td style="padding: 3px;">Estimated Monthly</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">Bi-Week</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">15-Oct-2026</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">01-Oct-2026</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">15-Oct-2026</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold text-primary">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                <td style="padding: 3px;">₱ {{ "{:,.2f}".format((user.daily_rate if user and user.daily_rate else 1000) * 22) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- SUMMARY BAR -->
+                    <div class="mb-2">
+                        <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                            Summary
+                        </div>
+                        <table class="w-100 text-center" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                            <tr style="background-color: #E2E8F0; font-weight: bold;">
+                                <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Current</td>
+                                <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Gross</td>
+                                <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Pre-Tax / Non-Taxable</td>
+                                <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Taxes / Deductions</td>
+                                <td style="padding: 3px; width: 20%;">Net Pay</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">This Pay Period</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">₱ 0.00</td>
+                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- HOURS & EARNINGS vs DEDUCTIONS (SIDE BY SIDE) -->
+                    <div class="row g-2 mb-2">
+                        <!-- Left Side: Hours and Earnings -->
+                        <div class="col-6">
+                            <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                                Hours and Earnings
+                            </div>
+                            <table class="w-100" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                                <thead style="background-color: #E2E8F0; font-weight: bold;">
+                                    <tr>
+                                        <th style="padding: 3px 6px;">Description</th>
+                                        <th style="padding: 3px 6px;" class="text-end">Hours</th>
+                                        <th style="padding: 3px 6px;" class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">Regular Base Pay (Tax Free)</td>
+                                        <td style="padding: 2px 6px;" class="text-end">8.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">Meal Allowance Non Taxable</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">PTO Payment / Leave</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">Regular OT</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">Night Differential</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">13th Month Pay / Bonus</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Right Side: Pre-Tax, Tax & After Tax Deductions -->
+                        <div class="col-6">
+                            <!-- Pre-Tax Deductions -->
+                            <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                                Pre-Tax Deductions
+                            </div>
+                            <table class="w-100 mb-1" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                                <thead style="background-color: #E2E8F0; font-weight: bold;">
+                                    <tr>
+                                        <th style="padding: 3px 6px;">Description</th>
+                                        <th style="padding: 3px 6px;" class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">HDMF EE Contribution (Pag-IBIG)</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">PHILHEALTH EE Contribution</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">SSS EE Contribution</td>
+                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Tax Deductions -->
+                            <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                                Tax Deductions
+                            </div>
+                            <table class="w-100" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 2px 6px;">Withholding Tax (BIR - Tax Free Base)</td>
+                                        <td style="padding: 2px 6px;" class="text-end fw-bold text-success">0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ACCRUALS & ABSENCES (SIDE BY SIDE) -->
+                    <div class="row g-2 mb-2">
+                        <!-- Accruals -->
+                        <div class="col-6">
+                            <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                                Accruals
+                            </div>
+                            <table class="w-100 text-center" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                                <thead style="background-color: #E2E8F0; font-weight: bold;">
+                                    <tr>
+                                        <td style="padding: 3px; text-align: left;">Description</td>
+                                        <td style="padding: 3px;">Current</td>
+                                        <td style="padding: 3px;">Balance</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 2px 6px; text-align: left;">PTO / Vacation Leave</td>
+                                        <td style="padding: 2px;">0.00</td>
+                                        <td style="padding: 2px;">0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Absences -->
+                        <div class="col-6">
+                            <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                                Absences / Tardiness
+                            </div>
+                            <table class="w-100 text-center" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                                <thead style="background-color: #E2E8F0; font-weight: bold;">
+                                    <tr>
+                                        <td style="padding: 3px; text-align: left;">Description</td>
+                                        <td style="padding: 3px;">Start Date</td>
+                                        <td style="padding: 3px;">End Date</td>
+                                        <td style="padding: 3px;">This Pay</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 2px 6px; text-align: left;" colspan="4" class="text-muted">No unexcused absences logged.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- NET PAY DISTRIBUTION -->
+                    <div class="mb-2">
+                        <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                            Net Pay Distribution
+                        </div>
+                        <table class="w-100 text-center" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                            <tr style="background-color: #E2E8F0; font-weight: bold;">
+                                <td style="padding: 3px;">Deposit / Cheque Number</td>
+                                <td style="padding: 3px;">Bank Name</td>
+                                <td style="padding: 3px;">Account Type</td>
+                                <td style="padding: 3px;">Bank Branch</td>
+                                <td style="padding: 3px;">Account Number</td>
+                                <td style="padding: 3px;">Amount</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 3px;">Direct Deposit</td>
+                                <td style="padding: 3px;">BDO / UnionBank</td>
+                                <td style="padding: 3px;">Savings</td>
+                                <td style="padding: 3px;">Cubao QC</td>
+                                <td style="padding: 3px;">0000******1234</td>
+                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- OTHER INFORMATION (YTD) -->
+                    <div class="mb-3">
+                        <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
+                            Other Information (Year-To-Date Summary)
+                        </div>
+                        <table class="w-100" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
+                            <tr>
+                                <td style="padding: 2px 6px; width: 70%;">Non Taxable Earnings YTD</td>
+                                <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 6px;">Pre Tax Deductions YTD</td>
+                                <td style="padding: 2px 6px;" class="text-end">₱ 0.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 6px;">Total Tax Deductions YTD</td>
+                                <td style="padding: 2px 6px;" class="text-end">₱ 0.00</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 6px;" class="fw-bold">Total Earnings YTD</td>
+                                <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- MESSAGE SECTION -->
+                    <div style="border: 1px solid #CBD5E1; padding: 6px; font-size: 0.7rem; background: #F8FAFC;">
+                        <strong>Message(s):</strong> System generated tax-free base payslip based on daily rate. No physical signature required.
+                    </div>
+
                 </div>
             </div>
             <div class="modal-footer bg-light d-flex justify-content-between no-print py-2">
