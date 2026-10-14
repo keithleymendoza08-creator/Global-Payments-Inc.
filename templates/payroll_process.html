@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Payroll Processing - Global Payments HRIS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="fw-bold mb-1" style="color: #002B49;">
+                <i class="bi bi-calculator me-2"></i>BPO Payroll Processing & Cut-Off Engine
+            </h5>
+            <p class="text-muted small mb-0">Process semi-monthly gross-to-net compensation including night differentials and statutory deductions.</p>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-2 fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- CUT-OFF PERIOD FORM -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body">
+            <form action="{{ url_for('payroll_processing') }}" method="POST" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold small">Payroll Period Start</label>
+                    <input type="date" name="period_start" class="form-control form-control-sm" value="{{ period_start }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold small">Payroll Period End</label>
+                    <input type="date" name="period_end" class="form-control form-control-sm" value="{{ period_end }}" required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary btn-sm rounded-2 w-100 fw-bold py-2" style="background-color: #0066B2;">
+                        <i class="bi bi-cpu me-1"></i> Compute Payroll Cut-Off
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- COMPUTED PAYROLL RESULTS TABLE -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0" style="color: #002B49;"><i class="bi bi-table me-2"></i>Generated Payroll Register Preview</h6>
+            <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-success btn-sm rounded-2 fw-semibold">
+                <i class="bi bi-download me-1"></i> Export Master CSV
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Emp ID</th>
+                            <th>Employee Name</th>
+                            <th>Department</th>
+                            <th>Days Worked</th>
+                            <th class="text-end">Basic Pay</th>
+                            <th class="text-end">Night Diff</th>
+                            <th class="text-end">Gross Pay</th>
+                            <th class="text-end">Statutory Ded.</th>
+                            <th class="text-end">Net Pay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if payroll_results %}
+                            {% for p in payroll_results %}
+                            <tr>
+                                <td>{{ p.employee_id }}</td>
+                                <td class="fw-semibold text-start">{{ p.fullname }}</td>
+                                <td>{{ p.department }}</td>
+                                <td><span class="badge bg-secondary px-2">{{ p.days_worked }} Days</span></td>
+                                <td class="text-end">₱ {{ "{:,.2f}".format(p.basic_pay) }}</td>
+                                <td class="text-end">₱ {{ "{:,.2f}".format(p.night_diff) }}</td>
+                                <td class="text-end fw-bold text-primary">₱ {{ "{:,.2f}".format(p.gross_pay) }}</td>
+                                <td class="text-end text-danger">₱ {{ "{:,.2f}".format(p.deductions) }}</td>
+                                <td class="text-end fw-bold text-success">₱ {{ "{:,.2f}".format(p.net_pay) }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-5">No payroll records computed for this period yet. Click "Compute Payroll Cut-Off" above.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

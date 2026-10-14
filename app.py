@@ -431,14 +431,12 @@ def reports():
                     'daily_rate': 3500
                 }
 
-            # Ligtas na pagkuha ng lahat ng empleyado para sa Master Payroll
             try:
                 cur.execute("SELECT * FROM users ORDER BY id DESC")
                 employees = cur.fetchall() or []
             except Exception:
                 employees = [current_user]
 
-            # Ligtas na pagkuha ng timekeeping records
             try:
                 cur.execute("""
                     SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
@@ -470,6 +468,75 @@ def reports():
         user=current_user,
         employees=employees,
         timekeeping_records=timekeeping_records
+    )
+
+@app.route('/payroll-processing', methods=['GET', 'POST'])
+def payroll_processing():
+    if 'user_id' not in session:
+        return redirect('/login')
+    
+    if session.get('role') == 'employee':
+        flash('Unauthorized access to payroll processing module.', 'danger')
+        return redirect('/dashboard')
+
+    db = get_db()
+    employees = []
+    payroll_results = []
+    period_start = request.form.get('period_start', '2026-10-01')
+    period_end = request.form.get('period_end', '2026-10-15')
+
+    try:
+        with db.cursor() as cur:
+            cur.execute("SELECT * FROM users ORDER BY id DESC")
+            employees = cur.fetchall() or []
+
+            if request.method == 'POST':
+                for emp in employees:
+                    daily_rate = float(emp.get('daily_rate') or 1000.0)
+                    hourly_rate = daily_rate / 8.0
+                    
+                    cur.execute("""
+                        SELECT * FROM timekeeping 
+                        WHERE user_id = %s AND clock_out IS NOT NULL
+                        AND clock_in::date >= %s::date AND clock_in::date <= %s::date
+                    """, (emp['id'], period_start, period_end))
+                    logs = cur.fetchall() or []
+                    
+                    days_worked = len(logs)
+                    basic_pay = days_worked * daily_rate
+                    night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
+                    overtime_pay = 0.00
+                    
+                    gross_pay = basic_pay + night_diff_pay + overtime_pay
+                    est_monthly = daily_rate * 22
+                    
+                    pagibig = 100.00 if gross_pay > 0 else 0.00
+                    philhealth = ((est_monthly * 0.025) / 2) if gross_pay > 0 else 0.00
+                    sss = ((est_monthly * 0.045) / 2) if gross_pay > 0 else 0.00
+                    total_deductions = pagibig + philhealth + sss
+                    
+                    net_pay = gross_pay - total_deductions if gross_pay > total_deductions else 0.00
+
+                    payroll_results.append({
+                        'employee_id': emp.get('employee_id', 'GP-2026-001'),
+                        'fullname': emp['fullname'],
+                        'department': emp.get('department', 'Operations'),
+                        'days_worked': days_worked,
+                        'basic_pay': basic_pay,
+                        'night_diff': night_diff_pay,
+                        'gross_pay': gross_pay,
+                        'deductions': total_deductions,
+                        'net_pay': net_pay
+                    })
+    except Exception as e:
+        print("Payroll Processing Error:", e)
+
+    return render_template(
+        'payroll_processing.html',
+        employees=employees,
+        payroll_results=payroll_results,
+        period_start=period_start,
+        period_end=period_end
     )
 
 @app.route('/admin/assign_shift', methods=['POST'])

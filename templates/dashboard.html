@@ -295,7 +295,7 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#payrollCutoffModal">
+                <a href="{{ url_for('payroll_processing') }}" class="sidebar-link">
                     <i class="bi bi-calculator"></i> Payroll Processing
                 </a>
             </li>
@@ -679,7 +679,6 @@
     </div>
 </div>
 
-<!-- TARDINESS LEDGER MODAL -->
 <div class="modal fade" id="tardinessModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -728,7 +727,6 @@
     </div>
 </div>
 
-<!-- LEAVE APPLICATION & STATUS HISTORY MODAL -->
 <div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -737,7 +735,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <!-- LEAVE BALANCE SUMMARY CARDS -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <div class="leave-balance-badge">
@@ -760,7 +757,6 @@
                 </div>
 
                 <div class="row g-4">
-                    <!-- KALIWA: FORM SA PAG-FILE NG LEAVE -->
                     <div class="col-lg-5 border-end pe-lg-4">
                         <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-plus-circle me-1"></i>File New Leave Request</h6>
                         <form action="{{ url_for('apply_leave') }}" method="POST">
@@ -793,7 +789,6 @@
                         </form>
                     </div>
 
-                    <!-- KANAN: TABLE NG STATUS HISTORY NA MAY DELETE BUTTON -->
                     <div class="col-lg-7">
                         <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-clock-history me-1"></i>My Leave Status Ledger</h6>
                         <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
@@ -852,7 +847,6 @@
     </div>
 </div>
 
-<!-- GLOBAL PAYMENTS LOANS & DYNAMIC STATUTORY DEDUCTIONS MODAL -->
 <div class="modal fade" id="loansModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -861,8 +855,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                
-                <!-- TOP SECTION: DYNAMIC STATUTORY DEDUCTIONS BASED ON DAILY RATE -->
                 <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-text me-1"></i>Pre-Tax Statutory Contributions (Computed from Daily Rate: ₱ {{ user.daily_rate if user.daily_rate else '0.00' }})</h6>
                 <div class="row g-3 mb-4 text-center">
                     <div class="col-md-4">
@@ -898,9 +890,7 @@
 
                 <hr class="my-4">
 
-                <!-- MAIN LOAN APPLICATION & LEDGER SECTION -->
                 <div class="row g-4">
-                    <!-- LEFT FORM: APPLY FOR A LOAN -->
                     <div class="col-lg-5 border-end pe-lg-4">
                         <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-plus-circle me-1"></i>File / Apply for a Loan</h6>
                         <form action="{{ url_for('apply_loan') }}" method="POST">
@@ -934,7 +924,6 @@
                         </form>
                     </div>
 
-                    <!-- RIGHT TABLE: LOAN STATUS LEDGER -->
                     <div class="col-lg-7">
                         <h6 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-bank me-1"></i>My Loan Applications & Balances</h6>
                         <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
@@ -975,7 +964,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
@@ -1021,35 +1009,6 @@
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="payrollCutoffModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header text-white" style="background-color: var(--gp-navy);">
-                <h5 class="modal-title fw-bold"><i class="bi bi-calculator me-2"></i>Calculate Periodic Payroll</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('calculate_payroll') }}" method="POST">
-                <div class="modal-body p-4">
-                    <div class="row g-3 mb-3">
-                        <div class="col-6">
-                            <label class="form-label fw-semibold">Period Start</label>
-                            <input type="date" name="period_start" class="form-control" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label fw-semibold">Period End</label>
-                            <input type="date" name="period_end" class="form-control" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success rounded-3 px-4">Process Cut-Off</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
