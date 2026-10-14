@@ -202,6 +202,18 @@
         gap: 6px;
     }
 
+    .event-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        padding: 5px 0;
+        border-bottom: 1px dashed #E2E8F0;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-date { font-weight: 700; min-width: 58px; color: #334155; }
+    .event-name { color: #475569; }
+
     .legend-dot {
         width: 10px;
         height: 10px;
@@ -257,8 +269,8 @@
             </li>
             {% else %}
             <li>
-                <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#shiftAssignmentModal">
-                    <i class="bi bi-person-gear"></i> Shift Management
+                <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#registrationModal">
+                    <i class="bi bi-person-gear"></i> Registration & Shift Assignment
                 </a>
             </li>
             <li>
@@ -369,6 +381,8 @@
                             </div>
                         </div>
                         <div class="pt-2 border-top mt-3">
+                            <div class="fw-bold small mb-1" style="color: var(--gp-navy);">Upcoming Events</div>
+                            <div id="upcomingEvents" class="mb-3"></div>
                             <div class="row g-2">
                                 <div class="col-6">
                                     <div class="calendar-legend-item">
@@ -380,6 +394,24 @@
                                     <div class="calendar-legend-item">
                                         <span class="legend-dot" style="background-color: #EF4444;"></span>
                                         <span>Regular Holiday</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="calendar-legend-item">
+                                        <span class="legend-dot" style="background-color: #F59E0B;"></span>
+                                        <span>Special Holiday</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="calendar-legend-item">
+                                        <span class="legend-dot" style="background-color: #0EA5E9;"></span>
+                                        <span>Leave</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="calendar-legend-item">
+                                        <span class="legend-dot" style="background-color: #94A3B8;"></span>
+                                        <span>Rest Day</span>
                                     </div>
                                 </div>
                             </div>
@@ -609,6 +641,32 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- PAYROLL LOCKING -->
+            {% set ns = namespace(gross=0, ded=0, net=0, count=0) %}
+            {% for pr in payroll_results %}
+                {% set ns.gross = ns.gross + (pr.gross_pay or 0) %}
+                {% set ns.ded = ns.ded + (pr.deductions or 0) %}
+                {% set ns.net = ns.net + (pr.net_pay or 0) %}
+                {% set ns.count = ns.count + 1 %}
+            {% endfor %}
+            <div class="calendar-card mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-lock me-2"></i>Payroll Locking</h5>
+                    {% if payroll_locked is defined and payroll_locked %}
+                    <span class="badge bg-success"><i class="bi bi-lock-fill me-1"></i>Locked</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-unlock me-1"></i>Open for Editing</span>
+                    {% endif %}
+                </div>
+                <p class="text-muted small mb-3">HR audits totals and locks period against retroactive edits.</p>
+                <div class="row g-3 text-center">
+                    <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Employees</div><div class="fw-bold">{{ ns.count }}</div></div></div>
+                    <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Total Gross Pay</div><div class="fw-bold">₱{{ "%.2f"|format(ns.gross) }}</div></div></div>
+                    <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Total Deductions</div><div class="fw-bold text-danger">₱{{ "%.2f"|format(ns.ded) }}</div></div></div>
+                    <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Total Net Pay</div><div class="fw-bold text-success">₱{{ "%.2f"|format(ns.net) }}</div></div></div>
+                </div>
+            </div>
         </div>
         {% endif %}
 
@@ -680,6 +738,44 @@
                     <i class="bi bi-person-lines-fill me-1"></i> Open Full Profile Page
                 </a>
                 <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="registrationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header text-white" style="background-color: var(--gp-navy);">
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-gear me-2"></i>Registration & Shift Assignment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small">Registered employee profiles. Assign standard or flexible shifts below.</p>
+                <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                    <table class="table table-bordered table-sm text-center align-middle mb-0">
+                        <thead class="table-light">
+                            <tr><th>Employee ID</th><th>Name</th><th>Department</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in employees %}
+                            <tr>
+                                <td>{{ emp.employee_id }}</td>
+                                <td class="fw-semibold">{{ emp.fullname }}</td>
+                                <td>{{ emp.department }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="3" class="text-muted py-4">No registered employees found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-3 px-4" style="background-color: var(--gp-blue);" id="openShiftFromRegistration">
+                    <i class="bi bi-calendar-range me-1"></i>Assign Shift
+                </button>
             </div>
         </div>
     </div>
@@ -803,13 +899,56 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Registration -> Shift Assignment modal switch
+    const shiftBtn = document.getElementById('openShiftFromRegistration');
+    if (shiftBtn && window.bootstrap) {
+        shiftBtn.addEventListener('click', function() {
+            const regEl = document.getElementById('registrationModal');
+            const shiftEl = document.getElementById('shiftAssignmentModal');
+            regEl.addEventListener('hidden.bs.modal', function openShift() {
+                regEl.removeEventListener('hidden.bs.modal', openShift);
+                bootstrap.Modal.getOrCreateInstance(shiftEl).show();
+            });
+            bootstrap.Modal.getOrCreateInstance(regEl).hide();
+        });
+    }
+
     const calendarContainer = document.getElementById('calendarDaysContainer');
     if (!calendarContainer) return;
 
     const year = 2026;
     const month = 9; // October
-    const paydays = [15, 30];
-    const specialHolidays = [31]; 
+    const pad = n => String(n).padStart(2, '0');
+    const key = (y, m, d) => y + '-' + pad(m + 1) + '-' + pad(d);
+
+    // Philippine holidays (Oct - Dec 2026)
+    const holidays = {
+        '2026-10-31': { type: 'special', name: 'Special Non-Working Day' },
+        '2026-11-01': { type: 'special', name: "All Saints' Day" },
+        '2026-11-30': { type: 'regular', name: 'Bonifacio Day' },
+        '2026-12-08': { type: 'special', name: 'Feast of the Immaculate Conception' },
+        '2026-12-24': { type: 'special', name: 'Christmas Eve' },
+        '2026-12-25': { type: 'regular', name: 'Christmas Day' },
+        '2026-12-30': { type: 'regular', name: 'Rizal Day' },
+        '2026-12-31': { type: 'special', name: 'Last Day of the Year' }
+    };
+
+    // Approved / filed leaves of the logged-in user
+    const leaveDays = {};
+    const leaves = [
+        {% for l in my_leaves %}
+        { start: "{{ l.start_date|string }}", end: "{{ l.end_date|string }}", type: "{{ l.leave_type|default('Leave') }}", status: "{{ l.status|default('') }}" },
+        {% endfor %}
+    ];
+    leaves.forEach(l => {
+        if ((l.status || '').toLowerCase() === 'rejected') return;
+        const s = new Date(l.start.slice(0, 10) + 'T00:00:00');
+        const e = new Date(l.end.slice(0, 10) + 'T00:00:00');
+        if (isNaN(s) || isNaN(e)) return;
+        for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+            leaveDays[key(d.getFullYear(), d.getMonth(), d.getDate())] = l.type + ' Leave';
+        }
+    });
 
     const restDaysAttr = calendarContainer.getAttribute('data-rest-days') || 'Saturday,Sunday';
     const restDaysArray = restDaysAttr.split(',').map(d => d.trim().toLowerCase());
@@ -839,21 +978,50 @@ document.addEventListener('DOMContentLoaded', function() {
         dayCell.className = 'calendar-cell';
         dayCell.textContent = day;
 
-        const currentDate = new Date(year, month, day);
-        const dayOfWeekName = dayNames[currentDate.getDay()];
+        const k = key(year, month, day);
+        const dayOfWeekName = dayNames[new Date(year, month, day).getDay()];
+        const hol = holidays[k];
 
-        if (paydays.includes(day)) {
+        if (day === 15 || day === 30) {
             dayCell.classList.add('payday');
-            dayCell.title = "Payday";
-        } else if (specialHolidays.includes(day)) {
+            dayCell.title = 'Payday';
+        } else if (hol && hol.type === 'regular') {
+            dayCell.classList.add('reg-holiday');
+            dayCell.title = 'Regular Holiday - ' + hol.name;
+        } else if (hol && hol.type === 'special') {
             dayCell.classList.add('spec-holiday');
-            dayCell.title = "Special Non-Working Day";
+            dayCell.title = 'Special Holiday - ' + hol.name;
+        } else if (leaveDays[k]) {
+            dayCell.classList.add('leave-day');
+            dayCell.title = leaveDays[k];
         } else if (restDaysArray.includes(dayOfWeekName)) {
             dayCell.classList.add('rest-day');
-            dayCell.title = "Rest Day";
+            dayCell.title = 'Rest Day';
         }
-
         calendarContainer.appendChild(dayCell);
+    }
+
+    // ---- Upcoming events list (next 45 days) ----
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const limit = new Date(today); limit.setDate(limit.getDate() + 45);
+    const events = [];
+    for (let d = new Date(today); d <= limit; d.setDate(d.getDate() + 1)) {
+        const y = d.getFullYear(), m = d.getMonth(), dd = d.getDate(), k = key(y, m, dd);
+        const last = new Date(y, m + 1, 0).getDate();
+        if (dd === 15 || dd === Math.min(30, last)) events.push({ date: new Date(d), color: '#22C55E', name: 'Payday' });
+        if (holidays[k]) events.push({ date: new Date(d), color: holidays[k].type === 'regular' ? '#EF4444' : '#F59E0B', name: (holidays[k].type === 'regular' ? 'Regular Holiday - ' : 'Special Holiday - ') + holidays[k].name });
+        if (leaveDays[k]) events.push({ date: new Date(d), color: '#0EA5E9', name: leaveDays[k] });
+    }
+    const list = document.getElementById('upcomingEvents');
+    if (list) {
+        if (!events.length) {
+            list.innerHTML = '<div class="small text-muted">No upcoming events.</div>';
+        } else {
+            list.innerHTML = events.slice(0, 6).map(ev => {
+                const label = ev.date.getTime() === today.getTime() ? 'Today' : ev.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return '<div class="event-item"><span class="legend-dot" style="background-color:' + ev.color + ';"></span><span class="event-date">' + label + '</span><span class="event-name">' + ev.name + '</span></div>';
+            }).join('');
+        }
     }
 });
 </script>
