@@ -26,46 +26,47 @@
         background: #FFFFFF;
         border: 1px solid #CBD5E1;
         border-radius: 8px;
-        padding: 2rem;
+        padding: 2.5rem;
         color: #0F172A;
         font-family: Arial, Helvetica, sans-serif;
         box-sizing: border-box;
         width: 100%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .doc-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 0.5rem;
+        margin-bottom: 1rem;
     }
 
     .doc-table th {
         background-color: var(--gp-navy) !important;
         color: #FFFFFF !important;
-        font-size: 0.72rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        padding: 6px 8px;
+        padding: 8px 10px;
         vertical-align: middle;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
     .doc-table td {
-        padding: 6px 8px;
+        padding: 8px 10px;
         border-bottom: 1px solid #E2E8F0;
-        font-size: 0.78rem;
+        font-size: 0.82rem;
         vertical-align: middle;
     }
 
     .doc-section-title {
         background-color: #F1F5F9 !important;
         font-weight: 700;
-        font-size: 0.75rem;
+        font-size: 0.78rem;
         color: var(--gp-navy);
-        padding: 5px 8px;
+        padding: 6px 10px;
         border-left: 4px solid var(--gp-blue);
-        margin-top: 10px;
-        margin-bottom: 6px;
+        margin-top: 15px;
+        margin-bottom: 8px;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
@@ -92,7 +93,7 @@
             width: 100% !important;
             height: auto !important;
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 10mm !important;
             border: none !important;
             box-shadow: none !important;
             background: #FFFFFF !important;
@@ -118,7 +119,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="fw-bold mb-1" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-spreadsheet me-2"></i>DTR & Printable Reports</h4>
-            <p class="text-muted small mb-0">Generate and print official Certificates of Daily Time Record, Payslips, and Master Payroll Registers.</p>
+            <p class="text-muted small mb-0">Generate and print official Certificates of Daily Time Record, Payslips, and Master Payroll Registers[cite: 8].</p>
         </div>
         <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-3 fw-semibold">
             <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
@@ -134,7 +135,7 @@
                         <h5 class="fw-bold text-dark mb-0">Itemized Employee Payslip</h5>
                         <i class="bi bi-file-earmark-text fs-2 text-success"></i>
                     </div>
-                    <p class="text-muted small">Detailed gross pay, statutory deductions, and net compensation statement.</p>
+                    <p class="text-muted small">Detailed gross pay, statutory deductions, and net compensation statement[cite: 8].</p>
                 </div>
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-success btn-sm rounded-3 flex-grow-1 fw-bold" data-bs-toggle="modal" data-bs-target="#viewPayslipModal">
@@ -154,7 +155,7 @@
                         <h5 class="fw-bold text-dark mb-0">Certificate of Daily Time Record (DTR)</h5>
                         <i class="bi bi-printer fs-2 text-danger"></i>
                     </div>
-                    <p class="text-muted small">Official record of daily shift timestamps and tardiness logs.</p>
+                    <p class="text-muted small">Official record of daily shift timestamps and tardiness logs[cite: 8].</p>
                 </div>
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-danger btn-sm rounded-3 flex-grow-1 fw-bold" data-bs-toggle="modal" data-bs-target="#viewDTRModal">
@@ -173,7 +174,7 @@
                         <h5 class="fw-bold text-dark mb-0">Departmental Master Payroll Register</h5>
                         <i class="bi bi-journal-text fs-2 text-warning"></i>
                     </div>
-                    <p class="text-muted small">Comprehensive company-wide payroll summary and master payout register for HR auditing.</p>
+                    <p class="text-muted small">Comprehensive company-wide payroll summary and master payout register for HR auditing[cite: 8].</p>
                 </div>
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-warning btn-sm rounded-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#viewMasterPayrollModal">
@@ -247,72 +248,91 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <div class="document-paper" id="printablePayslip">
-                    <table style="width: 100%; margin-bottom: 12px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px;">
+                <div class="document-paper shadow-sm" id="printablePayslip">
+                    <table style="width: 100%; margin-bottom: 16px; border-bottom: 2px solid var(--gp-navy); padding-bottom: 10px;">
                         <tr>
                             <td style="border: none; padding: 0;">
                                 <div style="display: flex; align-items: center;">
-                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
+                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 40px; width: auto; margin-right: 12px;">
                                     <div>
-                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy);">Global Payments</h5>
-                                        <span style="color: #64748B; font-size: 0.75rem;">Global Payments Asia-Pacific Philippines Inc.</span>
+                                        <h4 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h4>
+                                        <span style="color: #64748B; font-size: 0.75rem;">Global Payments Asia-Pacific Philippines Inc. • Cubao, QC</span>
                                     </div>
                                 </div>
                             </td>
                             <td style="border: none; text-align: right; padding: 0;">
-                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">PAYSLIP</h4>
+                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">PAYSLIP STATEMENT</h4>
                                 <span class="badge bg-secondary" style="font-size: 0.7rem;">CONFIDENTIAL</span>
                             </td>
                         </tr>
                     </table>
 
-                    <div class="doc-section-title">PAY PERIOD AND SALARY INFORMATION</div>
+                    <table style="width: 100%; margin-bottom: 15px; font-size: 0.82rem; background: #F8FAFC; padding: 12px; border-radius: 6px; border: 1px solid #E2E8F0;">
+                        <tr>
+                            <td style="border: none; padding: 4px; width: 50%;"><strong>Employee Name:</strong> {{ user.fullname }}</td>
+                            <td style="border: none; padding: 4px; width: 50%;"><strong>Pay Period:</strong> October 01 - October 15, 2026</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; padding: 4px;"><strong>Employee ID:</strong> {{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td>
+                            <td style="border: none; padding: 4px;"><strong>Payout Date:</strong> October 15, 2026</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; padding: 4px;"><strong>Department:</strong> {{ user.department if user.department else 'Operations' }}</td>
+                            <td style="border: none; padding: 4px;"><strong>Work Location:</strong> {{ user.work_location if user.work_location else 'Cubao Quezon City' }}</td>
+                        </tr>
+                    </table>
+
+                    <div class="doc-section-title">COMPENSATION & STATUTORY DEDUCTIONS BREAKDOWN</div>
                     <table class="doc-table">
                         <thead>
                             <tr>
-                                <th style="width: 16%;">Pay Period</th>
-                                <th style="width: 16%;">Payment Date</th>
-                                <th style="width: 16%;">Pay Begin Date</th>
-                                <th style="width: 16%;">Pay End Date</th>
-                                <th style="width: 18%;">Pay Rate</th>
-                                <th style="width: 18%;">Annual Base</th>
+                                <th>Earnings / Allowances</th>
+                                <th class="text-end">Amount</th>
+                                <th>Statutory Deductions</th>
+                                <th class="text-end">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="fw-semibold">Semi-Monthly</td>
-                                <td>15-Oct-2026</td>
-                                <td>01-Oct-2026</td>
-                                <td>15-Oct-2026</td>
-                                <td class="fw-bold text-primary">₱ 38,500.00</td>
-                                <td class="fw-semibold">₱ 924,000.00</td>
+                                <td>Basic Pay (Semi-Monthly)</td>
+                                <td class="text-end">₱ 15,000.00</td>
+                                <td>SSS Contribution</td>
+                                <td class="text-end">₱ 500.00</td>
+                            </tr>
+                            <tr>
+                                <td>Overtime Pay</td>
+                                <td class="text-end">₱ 1,200.00</td>
+                                <td>PhilHealth Contribution</td>
+                                <td class="text-end">₱ 300.00</td>
+                            </tr>
+                            <tr>
+                                <td>Night Differential</td>
+                                <td class="text-end">₱ 800.00</td>
+                                <td>Pag-IBIG Fund</td>
+                                <td class="text-end">₱ 100.00</td>
+                            </tr>
+                            <tr>
+                                <td>Holiday Pay / Premiums</td>
+                                <td class="text-end">₱ 0.00</td>
+                                <td>Withholding Tax (BIR)</td>
+                                <td class="text-end">₱ 600.00</td>
+                            </tr>
+                            <tr style="background-color: #F8FAFC; font-weight: bold;">
+                                <td>Gross Earnings Total:</td>
+                                <td class="text-end text-success">₱ 17,000.00</td>
+                                <td>Total Deductions:</td>
+                                <td class="text-end text-danger">₱ 1,500.00</td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <table style="width: 100%; margin-top: 10px; margin-bottom: 12px; font-size: 0.8rem;">
-                        <tr>
-                            <td style="width: 50%; vertical-align: top; border: none; padding-right: 15px;">
-                                <table style="width: 100%;">
-                                    <tr><td style="color: #64748B; padding: 3px 0; width: 40%;">Employee Name:</td><td style="font-weight: bold;">{{ user.fullname }}</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Job Title:</td><td style="font-weight: 600;">{{ user.job_title if user.job_title else (user.role | title) }}</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Employee ID:</td><td style="font-weight: 600;">{{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Department:</td><td style="font-weight: 600;">{{ user.department if user.department else 'Operations' }}</td></tr>
-                                </table>
-                            </td>
-                            <td style="width: 50%; vertical-align: top; border: none; padding-left: 15px; border-left: 1px solid #E2E8F0;">
-                                <table style="width: 100%;">
-                                    <tr><td style="color: #64748B; padding: 3px 0; width: 40%;">Employer:</td><td style="font-weight: 600;">Global Payments Philippines</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Work Location:</td><td style="font-weight: 600;">{{ user.work_location if user.work_location else 'Cubao Quezon City' }}</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Daily Rate:</td><td style="font-weight: bold; color: var(--gp-blue);">₱ {{ "{:,.2f}".format(user.daily_rate if user.daily_rate else 3500) }}</td></tr>
-                                    <tr><td style="color: #64748B; padding: 3px 0;">Bank / Account:</td><td style="font-weight: 600;">SBC / 0000081158754</td></tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
+                    <div style="background: #E0F2FE; border: 1px solid #7DD3FC; padding: 12px; border-radius: 6px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold; color: var(--gp-navy); font-size: 0.95rem;">NET TAKE-HOME PAY:</span>
+                        <span style="font-weight: bold; color: #0369A1; font-size: 1.2rem;">₱ 15,500.00</span>
+                    </div>
 
-                    <div style="margin-top: 15px; padding-top: 8px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.7rem;">
-                        This is an official system-generated payslip from Global Payments HRIS. No signature required.
+                    <div style="margin-top: 25px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
+                        This is an official system-generated payslip from Global Payments HRIS. No physical signature is required.
                     </div>
                 </div>
             </div>
@@ -335,29 +355,29 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <div class="document-paper" id="printableDTR">
-                    <table style="width: 100%; margin-bottom: 12px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px;">
+                <div class="document-paper shadow-sm" id="printableDTR">
+                    <table style="width: 100%; margin-bottom: 16px; border-bottom: 2px solid var(--gp-navy); padding-bottom: 10px;">
                         <tr>
                             <td style="border: none; padding: 0;">
                                 <div style="display: flex; align-items: center;">
-                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
+                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 40px; width: auto; margin-right: 12px;">
                                     <div>
-                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy);">Global Payments</h5>
-                                        <span style="color: #64748B; font-size: 0.75rem;">Timekeeping & Attendance Department</span>
+                                        <h4 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h4>
+                                        <span style="color: #64748B; font-size: 0.75rem;">Timekeeping & Attendance Department • Official DTR</span>
                                     </div>
                                 </div>
                             </td>
                             <td style="border: none; text-align: right; padding: 0;">
-                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">DAILY TIME RECORD</h4>
-                                <span class="badge bg-danger" style="font-size: 0.7rem;">OFFICIAL ATTENDANCE LOG</span>
+                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">TIME RECORD</h4>
+                                <span class="badge bg-danger" style="font-size: 0.7rem;">OFFICIAL LOG</span>
                             </td>
                         </tr>
                     </table>
 
-                    <table style="width: 100%; margin-bottom: 15px; font-size: 0.8rem; background: #F8FAFC; padding: 10px; border-radius: 6px;">
+                    <table style="width: 100%; margin-bottom: 15px; font-size: 0.82rem; background: #F8FAFC; padding: 12px; border-radius: 6px; border: 1px solid #E2E8F0;">
                         <tr>
-                            <td style="border: none; padding: 4px;"><strong>Employee Name:</strong> {{ user.fullname }}</td>
-                            <td style="border: none; padding: 4px;"><strong>Employee ID:</strong> {{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td>
+                            <td style="border: none; padding: 4px; width: 50%;"><strong>Employee Name:</strong> {{ user.fullname }}</td>
+                            <td style="border: none; padding: 4px; width: 50%;"><strong>Employee ID:</strong> {{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td>
                         </tr>
                         <tr>
                             <td style="border: none; padding: 4px;"><strong>Department:</strong> {{ user.department if user.department else 'Operations' }}</td>
@@ -365,7 +385,7 @@
                         </tr>
                     </table>
 
-                    <div class="doc-section-title">SHIFT TIMESTAMPS & LOGS</div>
+                    <div class="doc-section-title">SHIFT TIMESTAMPS & ATTENDANCE AUDIT LOG</div>
                     <table class="doc-table">
                         <thead>
                             <tr>
@@ -414,7 +434,7 @@
                         </div>
                     </div>
 
-                    <div style="margin-top: 25px; padding-top: 8px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.7rem;">
+                    <div style="margin-top: 25px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
                         This is an official system-generated Certificate of Daily Time Record from Global Payments HRIS.
                     </div>
                 </div>
@@ -439,21 +459,21 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <div class="document-paper" id="printableMasterPayroll">
-                    <table style="width: 100%; margin-bottom: 12px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px;">
+                <div class="document-paper shadow-sm" id="printableMasterPayroll">
+                    <table style="width: 100%; margin-bottom: 16px; border-bottom: 2px solid var(--gp-navy); padding-bottom: 10px;">
                         <tr>
                             <td style="border: none; padding: 0;">
                                 <div style="display: flex; align-items: center;">
-                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
+                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 40px; width: auto; margin-right: 12px;">
                                     <div>
-                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy);">Global Payments</h5>
-                                        <span style="color: #64748B; font-size: 0.75rem;">Departmental Master Payroll Summary</span>
+                                        <h4 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h4>
+                                        <span style="color: #64748B; font-size: 0.75rem;">Departmental Master Payroll Summary • HR Audit Ready</span>
                                     </div>
                                 </div>
                             </td>
                             <td style="border: none; text-align: right; padding: 0;">
                                 <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">MASTER REGISTER</h4>
-                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">HR AUDIT READY</span>
+                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">AUDIT READY</span>
                             </td>
                         </tr>
                     </table>
@@ -493,7 +513,7 @@
                         </tbody>
                     </table>
 
-                    <div style="margin-top: 15px; padding-top: 8px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.7rem;">
+                    <div style="margin-top: 25px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
                         Official HR Master Payroll Register generated for Global Payments Inc.
                     </div>
                 </div>
