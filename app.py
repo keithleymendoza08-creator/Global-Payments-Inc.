@@ -314,6 +314,7 @@ def dashboard():
         return redirect('/login')
 
     db = get_db()
+    active_tab = request.args.get('tab', 'home')
     q = request.args.get('q', '')
 
     now = datetime.now()
@@ -352,12 +353,50 @@ def dashboard():
             cur.execute("SELECT * FROM loan_applications WHERE user_id=%s ORDER BY date_applied DESC", (session['user_id'],))
             my_loans = cur.fetchall() or []
 
-            cur.execute("""
-                SELECT l.*, u.fullname, u.department, u.job_title FROM leave_applications l
-                JOIN users u ON u.id=l.user_id
-                WHERE l.status='Pending' ORDER BY l.date_created DESC
-            """)
-            pending_leaves_list = cur.fetchall() or []
+            pending_leaves_list = []
+            payroll_results = []
+
+            if session.get('role') != 'employee':
+                cur.execute("""
+                    SELECT l.*, u.fullname, u.department, u.job_title FROM leave_applications l
+                    JOIN users u ON u.id=l.user_id
+                    WHERE l.status='Pending' ORDER BY l.date_created DESC
+                """)
+                pending_leaves_list = cur.fetchall() or []
+
+                for emp in employees:
+                    daily_rate = float(emp.get('daily_rate') or 1000.0)
+                    hourly_rate = daily_rate / 8.0
+                    try:
+                        cur.execute("""
+                            SELECT * FROM timekeeping 
+                            WHERE user_id = %s AND clock_out IS NOT NULL
+                        """, (emp['id'],))
+                        logs = cur.fetchall() or []
+                    except Exception:
+                        logs = []
+                    
+                    days_worked = len(logs)
+                    basic_pay = days_worked * daily_rate
+                    night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
+                    gross_pay = basic_pay + night_diff_pay
+                    est_monthly = daily_rate * 22
+                    pagibig = 100.00 if gross_pay > 0 else 0.00
+                    philhealth = ((est_monthly * 0.025) / 2) if gross_pay > 0 else 0.00
+                    sss = ((est_monthly * 0.045) / 2) if gross_pay > 0 else 0.00
+                    total_deductions = pagibig + philhealth + sss
+                    net_pay = gross_pay - total_deductions if gross_pay > total_deductions else 0.00
+
+                    payroll_results.append({
+                        'employee_id': emp.get('employee_id', 'GP-2026-001'),
+                        'fullname': emp.get('fullname', 'Unnamed'),
+                        'department': emp.get('department', 'Operations'),
+                        'days_worked': days_worked,
+                        'basic_pay': basic_pay,
+                        'gross_pay': gross_pay,
+                        'deductions': total_deductions,
+                        'net_pay': net_pay
+                    })
 
             cur.execute("""
                 SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
@@ -379,7 +418,9 @@ def dashboard():
             pending_leaves_count=pending_leaves_count, 
             total_payroll=total_payroll, 
             search_q=q,
-            current_month_year=current_month_year
+            current_month_year=current_month_year,
+            active_tab=active_tab,
+            payroll_results=payroll_results
         )
 
     except Exception as e:
@@ -401,7 +442,9 @@ def dashboard():
             pending_leaves_count=0, 
             total_payroll=0.0, 
             search_q=q,
-            current_month_year=current_month_year
+            current_month_year=current_month_year,
+            active_tab='home',
+            payroll_results=[]
         )
 
 @app.route('/reports')
@@ -431,156 +474,26 @@ def reports():
                     'daily_rate': 3500
                 }
 
-            try:
-                cur.execute("SELECT * FROM users ORDER BY id DESC")
-                employees = cur.fetchall() or []
-            except Exception:
-                employees = [current_user]
+            cur.execute("SELECT * FROM users ORDER BY id DESC")
+            employees = cur.fetchall() or []
 
-            try:
-                cur.execute("""
-                    SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
-                    FROM timekeeping t
-                    JOIN users u ON u.id=t.user_id
-                    ORDER BY t.clock_in DESC
-                """)
-                timekeeping_records = cur.fetchall() or []
-            except Exception:
-                timekeeping_records = []
+            cur.execute("""
+                SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
+                FROM timekeeping t
+                JOIN users u ON u.id=t.user_id
+                ORDER BY t.clock_in DESC
+            """)
+            timekeeping_records = cur.fetchall() or []
 
     except Exception as e:
         print("Reports Route Detailed Error:", e)
-        current_user = {
-            'id': session.get('user_id', 1),
-            'fullname': session.get('fullname', 'Employee'),
-            'role': session.get('role', 'employee'),
-            'employee_id': session.get('employee_id', 'GP-2026-001'),
-            'department': 'Operations',
-            'job_title': 'Staff',
-            'work_location': 'Cubao Quezon City',
-            'daily_rate': 3500
-        }
-        employees = [current_user]
-        timekeeping_records = []
-        
+
     return render_template(
         'reports.html', 
         user=current_user,
         employees=employees,
         timekeeping_records=timekeeping_records
     )
-
-@app.route('/payroll-processing', methods=['GET', 'POST'])
-def payroll_processing():
-    if 'user_id' not in session:
-        return redirect('/login')
-    
-    if session.get('role') == 'employee':
-        flash('Unauthorized access to payroll processing module.', 'danger')
-        return redirect('/dashboard')
-
-    db = get_db()
-    employees = []
-    payroll_results = []
-    period_start = request.form.get('period_start', '2026-10-01')
-    period_end = request.form.get('period_end', '2026-10-15')
-
-    try:
-        with db.cursor() as cur:
-            cur.execute("SELECT * FROM users ORDER BY id DESC")
-            employees = cur.fetchall() or []
-
-            for emp in employees:
-                daily_rate = float(emp.get('daily_rate') or 1000.0)
-                hourly_rate = daily_rate / 8.0
-                
-                try:
-                    cur.execute("""
-                        SELECT * FROM timekeeping 
-                        WHERE user_id = %s AND clock_out IS NOT NULL
-                        AND clock_in::date >= %s::date AND clock_in::date <= %s::date
-                    """, (emp['id'], period_start, period_end))
-                    logs = cur.fetchall() or []
-                except Exception:
-                    logs = []
-                
-                days_worked = len(logs)
-                basic_pay = days_worked * daily_rate
-                night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
-                overtime_pay = 0.00
-                
-                gross_pay = basic_pay + night_diff_pay + overtime_pay
-                est_monthly = daily_rate * 22
-                
-                pagibig = 100.00 if gross_pay > 0 else 0.00
-                philhealth = ((est_monthly * 0.025) / 2) if gross_pay > 0 else 0.00
-                sss = ((est_monthly * 0.045) / 2) if gross_pay > 0 else 0.00
-                total_deductions = pagibig + philhealth + sss
-                
-                net_pay = gross_pay - total_deductions if gross_pay > total_deductions else 0.00
-
-                payroll_results.append({
-                    'employee_id': emp.get('employee_id', 'GP-2026-001'),
-                    'fullname': emp.get('fullname', 'Unnamed'),
-                    'department': emp.get('department', 'Operations'),
-                    'days_worked': days_worked,
-                    'basic_pay': basic_pay,
-                    'night_diff': night_diff_pay,
-                    'gross_pay': gross_pay,
-                    'deductions': total_deductions,
-                    'net_pay': net_pay
-                })
-    except Exception as e:
-        print("Payroll Processing Detailed Error:", e)
-
-    return render_template(
-        'payroll_processing.html',
-        employees=employees,
-        payroll_results=payroll_results,
-        period_start=period_start,
-        period_end=period_end
-    )
-
-@app.route('/leave-module', methods=['GET'])
-def leave_module():
-    if 'user_id' not in session:
-        return redirect('/login')
-    db = get_db()
-    with db.cursor() as cur:
-        cur.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
-        current_user = cur.fetchone()
-        cur.execute("SELECT * FROM leave_applications WHERE user_id=%s ORDER BY date_created DESC", (session['user_id'],))
-        my_leaves = cur.fetchall() or []
-    return render_template('leave_page.html', user=current_user, my_leaves=my_leaves)
-
-@app.route('/loans-module', methods=['GET'])
-def loans_module():
-    if 'user_id' not in session:
-        return redirect('/login')
-    db = get_db()
-    with db.cursor() as cur:
-        cur.execute("SELECT * FROM users WHERE id=%s", (session['user_id'],))
-        current_user = cur.fetchone()
-        cur.execute("SELECT * FROM loan_applications WHERE user_id=%s ORDER BY date_applied DESC", (session['user_id'],))
-        my_loans = cur.fetchall() or []
-    return render_template('loans_page.html', user=current_user, my_loans=my_loans)
-
-@app.route('/pending-approvals', methods=['GET'])
-def pending_approvals():
-    if 'user_id' not in session:
-        return redirect('/login')
-    if session.get('role') == 'employee':
-        flash('Unauthorized access.', 'danger')
-        return redirect('/dashboard')
-    db = get_db()
-    with db.cursor() as cur:
-        cur.execute("""
-            SELECT l.*, u.fullname, u.department, u.job_title FROM leave_applications l
-            JOIN users u ON u.id=l.user_id
-            WHERE l.status='Pending' ORDER BY l.date_created DESC
-        """)
-        pending_leaves = cur.fetchall() or []
-    return render_template('approvals_page.html', pending_leaves=pending_leaves)
 
 @app.route('/admin/assign_shift', methods=['POST'])
 def assign_shift():
@@ -648,7 +561,7 @@ def apply_leave():
         request.form['reason']
     )
     flash(msg, 'success' if ok else 'danger')
-    return redirect('/dashboard')
+    return redirect('/dashboard?tab=leave')
 
 @app.route('/leave/delete/<int:id>', methods=['POST'])
 def delete_leave(id):
@@ -665,7 +578,7 @@ def delete_leave(id):
         print("Delete Leave Error:", e)
         flash('Failed to delete leave application.', 'danger')
         
-    return redirect('/dashboard')
+    return redirect('/dashboard?tab=leave')
 
 @app.route('/loan/apply', methods=['POST'])
 def apply_loan():
@@ -690,7 +603,7 @@ def apply_loan():
         print("Apply Loan Error:", e)
         flash('Failed to submit loan application.', 'danger')
 
-    return redirect('/dashboard')
+    return redirect('/dashboard?tab=loans')
 
 @app.route('/admin/approve_leave/<int:id>')
 def approve_leave(id):
@@ -699,18 +612,7 @@ def approve_leave(id):
         return redirect('/dashboard')
     ok, msg = hris.approve_leave(id, session['user_id'])
     flash(msg, 'success' if ok else 'danger')
-    return redirect('/dashboard')
-
-@app.route('/admin/calculate_payroll', methods=['POST'])
-def calculate_payroll():
-    if session.get('role') not in ['admin', 'hr_manager', 'hr']:
-        flash('Unauthorized access for payroll processing.', 'danger')
-        return redirect('/dashboard')
-    period_start = request.form.get('period_start')
-    period_end = request.form.get('period_end')
-    hris.process_periodic_payroll(period_start, period_end)
-    flash(f"Payroll successfully processed and locked for period {period_start} to {period_end}.", 'success')
-    return redirect('/dashboard')
+    return redirect('/dashboard?tab=approvals')
 
 @app.route('/export_payroll_csv')
 def export_payroll_csv():
