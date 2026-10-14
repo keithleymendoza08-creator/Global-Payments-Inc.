@@ -421,6 +421,7 @@ def reports():
 
             if not current_user:
                 current_user = {
+                    'id': session['user_id'],
                     'fullname': session.get('fullname', 'Employee'),
                     'role': session.get('role', 'employee'),
                     'employee_id': session.get('employee_id', 'GP-2026-001'),
@@ -430,21 +431,29 @@ def reports():
                     'daily_rate': 3500
                 }
 
-            # Kunin ang lahat ng empleyado para sa Master Payroll Register
-            cur.execute("SELECT * FROM users ORDER BY id DESC")
-            employees = cur.fetchall() or []
+            # Ligtas na pagkuha ng lahat ng empleyado para sa Master Payroll
+            try:
+                cur.execute("SELECT * FROM users ORDER BY id DESC")
+                employees = cur.fetchall() or []
+            except Exception:
+                employees = [current_user]
 
-            # Kunin ang lahat ng timekeeping records
-            cur.execute("""
-                SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
-                FROM timekeeping t
-                JOIN users u ON u.id=t.user_id
-                ORDER BY t.clock_in DESC
-            """)
-            timekeeping_records = cur.fetchall() or []
+            # Ligtas na pagkuha ng timekeeping records
+            try:
+                cur.execute("""
+                    SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
+                    FROM timekeeping t
+                    JOIN users u ON u.id=t.user_id
+                    ORDER BY t.clock_in DESC
+                """)
+                timekeeping_records = cur.fetchall() or []
+            except Exception:
+                timekeeping_records = []
+
     except Exception as e:
-        print("Reports Route Error:", e)
+        print("Reports Route Detailed Error:", e)
         current_user = {
+            'id': session.get('user_id', 1),
             'fullname': session.get('fullname', 'Employee'),
             'role': session.get('role', 'employee'),
             'employee_id': session.get('employee_id', 'GP-2026-001'),
@@ -453,7 +462,8 @@ def reports():
             'work_location': 'Cubao Quezon City',
             'daily_rate': 3500
         }
-        employees = []
+        employees = [current_user]
+        timekeeping_records = []
         
     return render_template(
         'reports.html', 
