@@ -29,20 +29,20 @@
         border-color: #CBD5E1;
     }
 
-    /* Subtle left accent borders instead of thick full borders */
+    /* Subtle left accent borders */
     .card-accent-success { border-left: 4px solid #10B981 !important; }
     .card-accent-danger  { border-left: 4px solid #EF4444 !important; }
     .card-accent-warning { border-left: 4px solid #F59E0B !important; }
 
     /* Clean icons */
     .report-icon {
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
         border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.25rem;
+        font-size: 1.15rem;
     }
 
     /* --- DOCUMENT PRINTABLE STYLES --- */
@@ -153,10 +153,10 @@
         </a>
     </div>
 
-    <!-- REPORT SELECTION CARDS -->
+    <!-- REPORT SELECTION CARDS (3 IN ONE ROW) -->
     <div class="row g-3 mb-4">
         <!-- PAYSLIP CARD -->
-        <div class="col-lg-6">
+        <div class="col-lg-4 col-md-6">
             <div class="report-card p-3 h-100 d-flex flex-column justify-content-between card-accent-success">
                 <div>
                     <div class="d-flex align-items-center justify-content-between mb-2">
@@ -169,21 +169,21 @@
                 </div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-success btn-sm rounded-2 flex-grow-1 fw-semibold" data-bs-toggle="modal" data-bs-target="#viewPayslipModal">
-                        <i class="bi bi-eye me-1"></i> View & Print Payslip
+                        <i class="bi bi-eye me-1"></i> View & Print
                     </button>
-                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-success btn-sm rounded-2">
-                        <i class="bi bi-download me-1"></i> CSV
+                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-success btn-sm rounded-2" title="Export CSV">
+                        <i class="bi bi-download"></i>
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- DTR CARD -->
-        <div class="col-lg-6">
+        <div class="col-lg-4 col-md-6">
             <div class="report-card p-3 h-100 d-flex flex-column justify-content-between card-accent-danger">
                 <div>
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h6 class="fw-bold text-dark mb-0">Certificate of Daily Time Record (DTR)</h6>
+                        <h6 class="fw-bold text-dark mb-0">Certificate of DTR</h6>
                         <div class="report-icon bg-danger-subtle text-danger">
                             <i class="bi bi-clock-history"></i>
                         </div>
@@ -200,23 +200,23 @@
 
         <!-- HR / ADMIN EXCLUSIVE: MASTER PAYROLL REGISTER -->
         {% if user.role != 'employee' %}
-        <div class="col-12">
+        <div class="col-lg-4 col-md-12">
             <div class="report-card p-3 h-100 d-flex flex-column justify-content-between card-accent-warning">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <div>
-                        <h6 class="fw-bold text-dark mb-1">Departmental Master Payroll Register</h6>
-                        <p class="text-muted small mb-0">Comprehensive company-wide payroll summary and master payout register for HR auditing.</p>
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-bold text-dark mb-0">Master Payroll Register</h6>
+                        <div class="report-icon bg-warning-subtle text-warning">
+                            <i class="bi bi-journal-text"></i>
+                        </div>
                     </div>
-                    <div class="report-icon bg-warning-subtle text-warning">
-                        <i class="bi bi-journal-text"></i>
-                    </div>
+                    <p class="text-muted small mb-3">Comprehensive company-wide payroll summary for HR auditing.</p>
                 </div>
-                <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-warning btn-sm rounded-2 fw-semibold text-dark" data-bs-toggle="modal" data-bs-target="#viewMasterPayrollModal">
-                        <i class="bi bi-eye me-1"></i> View & Print Master Payroll
+                <div class="d-flex gap-2">
+                    <button class="btn btn-warning btn-sm rounded-2 fw-semibold text-dark flex-grow-1" data-bs-toggle="modal" data-bs-target="#viewMasterPayrollModal">
+                        <i class="bi bi-eye me-1"></i> View & Print
                     </button>
-                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-secondary btn-sm rounded-2 text-dark">
-                        <i class="bi bi-download me-1"></i> Export Master CSV
+                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-secondary btn-sm rounded-2 text-dark" title="Export Master CSV">
+                        <i class="bi bi-download"></i>
                     </a>
                 </div>
             </div>
@@ -274,100 +274,115 @@
     </div>
 </div>
 
-<!-- PAYSLIP MODAL -->
+<!-- PAYSLIP MODAL (UPDATED CORPORATE VERSION) -->
 <div class="modal fade" id="viewPayslipModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header text-white no-print" style="background-color: var(--gp-navy);">
-                <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Official Employee Payslip</h6>
+                <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Official Employee Payslip Statement</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
                 <div class="document-paper shadow-sm" id="printablePayslip">
+                    <!-- COMPANY HEADER -->
                     <table style="width: 100%; margin-bottom: 16px; border-bottom: 2px solid var(--gp-navy); padding-bottom: 10px;">
                         <tr>
                             <td style="border: none; padding: 0;">
                                 <div style="display: flex; align-items: center;">
                                     <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
                                     <div>
-                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h5>
-                                        <span style="color: #64748B; font-size: 0.75rem;">Global Payments Asia-Pacific Philippines Inc. • Cubao, QC</span>
+                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS ASIA-PACIFIC PH INC.</h5>
+                                        <span style="color: #64748B; font-size: 0.72rem;">10ari Tower, Cubao, Quezon City • Human Resources & Payroll Division</span>
                                     </div>
                                 </div>
                             </td>
                             <td style="border: none; text-align: right; padding: 0;">
-                                <h5 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">PAYSLIP STATEMENT</h5>
+                                <h5 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">EMPLOYEE PAYSLIP</h5>
                                 <span class="badge bg-secondary" style="font-size: 0.65rem;">CONFIDENTIAL</span>
                             </td>
                         </tr>
                     </table>
 
+                    <!-- EMPLOYEE & PAY PERIOD INFO GRID -->
                     <table style="width: 100%; margin-bottom: 15px; font-size: 0.82rem; background: #F8FAFC; padding: 12px; border-radius: 6px; border: 1px solid #E2E8F0;">
                         <tr>
                             <td style="border: none; padding: 4px; width: 50%;"><strong>Employee Name:</strong> {{ user.fullname }}</td>
-                            <td style="border: none; padding: 4px; width: 50%;"><strong>Pay Period:</strong> October 01 - October 15, 2026</td>
+                            <td style="border: none; padding: 4px; width: 50%;"><strong>Pay Period:</strong> {{ payslip.period if payslip and payslip.period else 'October 01 - October 15, 2026' }}</td>
                         </tr>
                         <tr>
                             <td style="border: none; padding: 4px;"><strong>Employee ID:</strong> {{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td>
-                            <td style="border: none; padding: 4px;"><strong>Payout Date:</strong> October 15, 2026</td>
+                            <td style="border: none; padding: 4px;"><strong>Payout Date:</strong> {{ payslip.payout_date if payslip and payslip.payout_date else 'October 15, 2026' }}</td>
                         </tr>
                         <tr>
-                            <td style="border: none; padding: 4px;"><strong>Department:</strong> {{ user.department if user.department else 'Operations' }}</td>
-                            <td style="border: none; padding: 4px;"><strong>Work Location:</strong> {{ user.work_location if user.work_location else 'Cubao Quezon City' }}</td>
+                            <td style="border: none; padding: 4px;"><strong>Department / LOB:</strong> {{ user.department if user.department else 'Operations / IT' }}</td>
+                            <td style="border: none; padding: 4px;"><strong>Tax Status / SSS TIN:</strong> SSS: -- | TIN: --</td>
                         </tr>
                     </table>
 
-                    <div class="doc-section-title">COMPENSATION & STATUTORY DEDUCTIONS BREAKDOWN</div>
+                    <!-- EARNINGS & DEDUCTIONS BREAKDOWN TABLE -->
+                    <div class="doc-section-title">COMPENSATION & STATUTORY DEDUCTIONS SUMMARY</div>
                     <table class="doc-table">
                         <thead>
                             <tr>
-                                <th>Earnings / Allowances</th>
-                                <th class="text-end">Amount</th>
-                                <th>Statutory Deductions</th>
-                                <th class="text-end">Amount</th>
+                                <th style="width: 35%;">Earnings / Allowances</th>
+                                <th style="width: 15%;" class="text-end">Amount (₱)</th>
+                                <th style="width: 35%;">Statutory Deductions</th>
+                                <th style="width: 15%;" class="text-end">Amount (₱)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Basic Pay (Semi-Monthly)</td>
-                                <td class="text-end">₱ 15,000.00</td>
+                                <td>Basic Pay</td>
+                                <td class="text-end">{{ payslip.basic_pay if payslip and payslip.basic_pay else '0.00' }}</td>
                                 <td>SSS Contribution</td>
-                                <td class="text-end">₱ 500.00</td>
+                                <td class="text-end">{{ payslip.sss if payslip and payslip.sss else '0.00' }}</td>
                             </tr>
                             <tr>
-                                <td>Overtime Pay</td>
-                                <td class="text-end">₱ 1,200.00</td>
+                                <td>Overtime Pay (OT)</td>
+                                <td class="text-end">{{ payslip.overtime if payslip and payslip.overtime else '0.00' }}</td>
                                 <td>PhilHealth Contribution</td>
-                                <td class="text-end">₱ 300.00</td>
+                                <td class="text-end">{{ payslip.philhealth if payslip and payslip.philhealth else '0.00' }}</td>
                             </tr>
                             <tr>
-                                <td>Night Differential</td>
-                                <td class="text-end">₱ 800.00</td>
+                                <td>Night Differential (ND)</td>
+                                <td class="text-end">{{ payslip.night_diff if payslip and payslip.night_diff else '0.00' }}</td>
                                 <td>Pag-IBIG Fund</td>
-                                <td class="text-end">₱ 100.00</td>
+                                <td class="text-end">{{ payslip.pagibig if payslip and payslip.pagibig else '0.00' }}</td>
                             </tr>
                             <tr>
-                                <td>Holiday Pay / Premiums</td>
-                                <td class="text-end">₱ 0.00</td>
+                                <td>Holiday / Premium Pay</td>
+                                <td class="text-end">{{ payslip.holiday_pay if payslip and payslip.holiday_pay else '0.00' }}</td>
                                 <td>Withholding Tax (BIR)</td>
-                                <td class="text-end">₱ 600.00</td>
+                                <td class="text-end">{{ payslip.tax if payslip and payslip.tax else '0.00' }}</td>
+                            </tr>
+                            <tr>
+                                <td>Allowances / Adjustments</td>
+                                <td class="text-end">{{ payslip.allowances if payslip and payslip.allowances else '0.00' }}</td>
+                                <td>Other Deductions / Loans</td>
+                                <td class="text-end">{{ payslip.other_deductions if payslip and payslip.other_deductions else '0.00' }}</td>
                             </tr>
                             <tr style="background-color: #F8FAFC; font-weight: bold;">
                                 <td>Gross Earnings Total:</td>
-                                <td class="text-end text-success">₱ 17,000.00</td>
+                                <td class="text-end text-success">{{ payslip.gross_pay if payslip and payslip.gross_pay else '₱ 0.00' }}</td>
                                 <td>Total Deductions:</td>
-                                <td class="text-end text-danger">₱ 1,500.00</td>
+                                <td class="text-end text-danger">{{ payslip.total_deductions if payslip and payslip.total_deductions else '₱ 0.00' }}</td>
                             </tr>
                         </tbody>
                     </table>
 
+                    <!-- NET TAKE HOME PAY BOX -->
                     <div style="background: #E0F2FE; border: 1px solid #7DD3FC; padding: 10px 14px; border-radius: 6px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: bold; color: var(--gp-navy); font-size: 0.88rem;">NET TAKE-HOME PAY:</span>
-                        <span style="font-weight: bold; color: #0369A1; font-size: 1.1rem;">₱ 15,500.00</span>
+                        <div>
+                            <span style="font-weight: bold; color: var(--gp-navy); font-size: 0.88rem; display: block;">NET TAKE-HOME PAY:</span>
+                            <span style="color: #0369A1; font-size: 0.72rem;">(Total Gross Earnings minus Total Statutory & Other Deductions)</span>
+                        </div>
+                        <span style="font-weight: bold; color: #0369A1; font-size: 1.15rem;">{{ payslip.net_pay if payslip and payslip.net_pay else '₱ 0.00' }}</span>
                     </div>
 
-                    <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
-                        This is an official system-generated payslip from Global Payments HRIS. No physical signature is required.
+                    <!-- FOOTER NOTES & SIGNATURE -->
+                    <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; color: #64748B; font-size: 0.72rem;">
+                        <span>This is an official system-generated document from Global Payments HRIS. No signature required.</span>
+                        <span>Generated on: October 15, 2026</span>
                     </div>
                 </div>
             </div>
