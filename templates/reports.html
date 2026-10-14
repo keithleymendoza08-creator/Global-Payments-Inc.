@@ -8,6 +8,11 @@
         --gp-navy: #002B49;
         --gp-blue: #0066B2;
         --gp-accent: #00A3E0;
+        --gp-bg: #F8FAFC;
+    }
+
+    body {
+        background-color: var(--gp-bg);
     }
 
     .report-card {
@@ -15,6 +20,7 @@
         border: 1px solid #E2E8F0;
         border-radius: 12px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
     .report-card:hover {
@@ -119,7 +125,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="fw-bold mb-1" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-spreadsheet me-2"></i>DTR & Printable Reports</h4>
-            <p class="text-muted small mb-0">Generate and print official Certificates of Daily Time Record, Payslips, and Master Payroll Registers[cite: 8].</p>
+            <p class="text-muted small mb-0">Generate and print official Certificates of Daily Time Record, Payslips, and Master Payroll Registers.</p>
         </div>
         <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-3 fw-semibold">
             <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
@@ -135,7 +141,7 @@
                         <h5 class="fw-bold text-dark mb-0">Itemized Employee Payslip</h5>
                         <i class="bi bi-file-earmark-text fs-2 text-success"></i>
                     </div>
-                    <p class="text-muted small">Detailed gross pay, statutory deductions, and net compensation statement[cite: 8].</p>
+                    <p class="text-muted small">Detailed gross pay, statutory deductions, and net compensation statement.</p>
                 </div>
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-success btn-sm rounded-3 flex-grow-1 fw-bold" data-bs-toggle="modal" data-bs-target="#viewPayslipModal">
@@ -155,7 +161,7 @@
                         <h5 class="fw-bold text-dark mb-0">Certificate of Daily Time Record (DTR)</h5>
                         <i class="bi bi-printer fs-2 text-danger"></i>
                     </div>
-                    <p class="text-muted small">Official record of daily shift timestamps and tardiness logs[cite: 8].</p>
+                    <p class="text-muted small">Official record of daily shift timestamps and tardiness logs.</p>
                 </div>
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-danger btn-sm rounded-3 flex-grow-1 fw-bold" data-bs-toggle="modal" data-bs-target="#viewDTRModal">
@@ -174,7 +180,7 @@
                         <h5 class="fw-bold text-dark mb-0">Departmental Master Payroll Register</h5>
                         <i class="bi bi-journal-text fs-2 text-warning"></i>
                     </div>
-                    <p class="text-muted small">Comprehensive company-wide payroll summary and master payout register for HR auditing[cite: 8].</p>
+                    <p class="text-muted small">Comprehensive company-wide payroll summary and master payout register for HR auditing.</p>
                 </div>
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-warning btn-sm rounded-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#viewMasterPayrollModal">
