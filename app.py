@@ -411,6 +411,7 @@ def reports():
     
     db = get_db()
     timekeeping_records = []
+    employees = []
     current_user = None
 
     try:
@@ -429,13 +430,17 @@ def reports():
                     'daily_rate': 3500
                 }
 
+            # Kunin ang lahat ng empleyado para sa Master Payroll Register
+            cur.execute("SELECT * FROM users ORDER BY id DESC")
+            employees = cur.fetchall() or []
+
+            # Kunin ang lahat ng timekeeping records
             cur.execute("""
                 SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
                 FROM timekeeping t
                 JOIN users u ON u.id=t.user_id
-                WHERE t.user_id=%s
                 ORDER BY t.clock_in DESC
-            """, (session['user_id'],))
+            """)
             timekeeping_records = cur.fetchall() or []
     except Exception as e:
         print("Reports Route Error:", e)
@@ -448,10 +453,12 @@ def reports():
             'work_location': 'Cubao Quezon City',
             'daily_rate': 3500
         }
+        employees = []
         
     return render_template(
         'reports.html', 
         user=current_user,
+        employees=employees,
         timekeeping_records=timekeeping_records
     )
 

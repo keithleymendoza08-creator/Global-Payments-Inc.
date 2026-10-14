@@ -10,7 +10,7 @@
 {% set completed_days = namespace(count=0) %}
 {% if timekeeping_records %}
     {% for t in timekeeping_records %}
-        {% if t.clock_out %}
+        {% if t.user_id == user.id and t.clock_out %}
             {% set completed_days.count = completed_days.count + 1 %}
         {% endif %}
     {% endfor %}
@@ -270,6 +270,7 @@
                     <tbody>
                         {% if timekeeping_records %}
                             {% for t in timekeeping_records %}
+                            {% if t.user_id == user.id or user.role != 'employee' %}
                             <tr>
                                 <td>{{ t.lob if t.lob else 'Cubao QC' }}</td>
                                 <td>{{ t.employee_id if t.employee_id else 'N/A' }}</td>
@@ -285,6 +286,7 @@
                                     {% endif %}
                                 </td>
                             </tr>
+                            {% endif %}
                             {% endfor %}
                         {% else %}
                             <tr>
@@ -696,6 +698,7 @@
                         <tbody>
                             {% if timekeeping_records %}
                                 {% for t in timekeeping_records %}
+                                {% if t.user_id == user.id %}
                                 <tr>
                                     <td>{{ t.lob if t.lob else 'Cubao QC' }}</td>
                                     <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
@@ -709,6 +712,7 @@
                                         {% endif %}
                                     </td>
                                 </tr>
+                                {% endif %}
                                 {% endfor %}
                             {% else %}
                                 <tr>
@@ -796,7 +800,7 @@
                                     {% set emp_completed_days = namespace(count=0) %}
                                     {% if timekeeping_records %}
                                         {% for t in timekeeping_records %}
-                                            {% if t.employee_id == emp.employee_id and t.clock_out %}
+                                            {% if (t.employee_id == emp.employee_id or t.user_id == emp.id) and t.clock_out %}
                                                 {% set emp_completed_days.count = emp_completed_days.count + 1 %}
                                             {% endif %}
                                         {% endfor %}
@@ -825,13 +829,7 @@
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td>{{ user.employee_id if user and user.employee_id else 'GP-2026-001' }}</td>
-                                    <td class="fw-semibold">{{ user.fullname }}</td>
-                                    <td>{{ user.department if user and user.department else 'Operations' }}</td>
-                                    <td class="text-end">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
-                                    <td class="text-end">₱ 0.00</td>
-                                    <td class="text-end text-danger">₱ {{ "{:,.2f}".format(total_pretax_deductions) }}</td>
-                                    <td class="text-end fw-bold text-success">₱ {{ "{:,.2f}".format(net_take_home) }}</td>
+                                    <td colspan="7" class="text-center text-muted py-4">No employees found in database.</td>
                                 </tr>
                             {% endif %}
                         </tbody>
