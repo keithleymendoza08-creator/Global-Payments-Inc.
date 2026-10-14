@@ -3,18 +3,30 @@
 {% block title %}DTR & Printable Reports - Global Payments HRIS{% endblock %}
 
 {% block content %}
-<!-- SETTING DYNAMIC STATUTORY DEDUCTION VARIABLES BASED ON DAILY RATE -->
+<!-- DYNAMIC COMPUTATION BASED ON ACTUAL COMPLETED TIMEKEEPING LOGS -->
 {% set daily = user.daily_rate if user and user.daily_rate else 1000.0 %}
-{% set est_monthly = daily * 22 %}
-{% set gross_cutoff = daily * 11 %} {# Semi-monthly gross (11 days) #}
 
-{# Statutory Computations (Employee Share Per Cutoff) #}
-{% set pagibig_ee = 100.00 %} {# Standard 100 per cutoff #}
-{% set philhealth_ee = (est_monthly * 0.025) / 2 %} {# 2.5% divided by 2 cutoffs #}
-{% set sss_ee = (est_monthly * 0.045) / 2 %} {# ~4.5% EE share divided by 2 cutoffs #}
+{# Bilangin ang actual completed time-in/clock-out records #}
+{% set completed_days = namespace(count=0) %}
+{% if timekeeping_records %}
+    {% for t in timekeeping_records %}
+        {% if t.clock_out %}
+            {% set completed_days.count = completed_days.count + 1 %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% set total_hours = completed_days.count * 8.0 %}
+{% set gross_cutoff = completed_days.count * daily %}
+{% set est_monthly = daily * 22 %}
+
+{# Dynamic Statutory Deductions (May bawas lang kapag may gross earnings) #}
+{% set pagibig_ee = 100.00 if gross_cutoff > 0 else 0.00 %}
+{% set philhealth_ee = ((est_monthly * 0.025) / 2) if gross_cutoff > 0 else 0.00 %}
+{% set sss_ee = ((est_monthly * 0.045) / 2) if gross_cutoff > 0 else 0.00 %}
 
 {% set total_pretax_deductions = sss_ee + philhealth_ee + pagibig_ee %}
-{% set net_take_home = gross_cutoff - total_pretax_deductions %}
+{% set net_take_home = gross_cutoff - total_pretax_deductions if gross_cutoff > total_pretax_deductions else 0.00 %}
 
 <style>
     :root {
@@ -439,8 +451,8 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td style="padding: 2px 6px;">Regular Base Pay (11 Days)</td>
-                                        <td style="padding: 2px 6px;" class="text-end">88.00</td>
+                                        <td style="padding: 2px 6px;">Regular Base Pay ({{ completed_days.count }} Days)</td>
+                                        <td style="padding: 2px 6px;" class="text-end">{{ "{:,.2f}".format(total_hours) }}</td>
                                         <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
                                     </tr>
                                     <tr>
@@ -616,7 +628,7 @@
 
                     <!-- MESSAGE SECTION -->
                     <div style="border: 1px solid #CBD5E1; padding: 6px; font-size: 0.7rem; background: #F8FAFC;">
-                        <strong>Message(s):</strong> System computed statutory contributions based on employee daily rate. No physical signature required.
+                        <strong>Message(s):</strong> System computed base pay based on actual completed timekeeping records. No physical signature required.
                     </div>
 
                 </div>
@@ -777,24 +789,51 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>GP-200110</td>
-                                <td class="fw-semibold">Keithley Modina</td>
-                                <td>IT & Infrastructure</td>
-                                <td class="text-end">₱ 38,500.00</td>
-                                <td class="text-end">₱ 1,500.00</td>
-                                <td class="text-end">₱ 3,626.50</td>
-                                <td class="text-end fw-bold text-success">₱ 36,373.50</td>
-                            </tr>
-                            <tr>
-                                <td>GP-2026-002</td>
-                                <td class="fw-semibold">Cindy Cataluña</td>
-                                <td>Engineering</td>
-                                <td class="text-end">₱ 35,000.00</td>
-                                <td class="text-end">₱ 1,200.00</td>
-                                <td class="text-end">₱ 3,100.00</td>
-                                <td class="text-end fw-bold text-success">₱ 33,100.00</td>
-                            </tr>
+                            {% if employees %}
+                                {% for emp in employees %}
+                                    {% set emp_daily = emp.daily_rate if emp.daily_rate else 1000.0 %}
+                                    
+                                    {% set emp_completed_days = namespace(count=0) %}
+                                    {% if timekeeping_records %}
+                                        {% for t in timekeeping_records %}
+                                            {% if t.employee_id == emp.employee_id and t.clock_out %}
+                                                {% set emp_completed_days.count = emp_completed_days.count + 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    {% set emp_basic = emp_completed_days.count * emp_daily %}
+                                    {% set emp_ot = 0.00 %}
+                                    
+                                    {% set emp_est_monthly = emp_daily * 22 %}
+                                    {% set emp_pagibig = 100.00 if emp_basic > 0 else 0.00 %}
+                                    {% set emp_philhealth = ((emp_est_monthly * 0.025) / 2) if emp_basic > 0 else 0.00 %}
+                                    {% set emp_sss = ((emp_est_monthly * 0.045) / 2) if emp_basic > 0 else 0.00 %}
+                                    {% set emp_deductions = emp_pagibig + emp_philhealth + emp_sss %}
+                                    
+                                    {% set emp_net = emp_basic + emp_ot - emp_deductions if (emp_basic + emp_ot) > emp_deductions else 0.00 %}
+
+                                    <tr>
+                                        <td>{{ emp.employee_id if emp.employee_id else 'GP-2026-001' }}</td>
+                                        <td class="fw-semibold">{{ emp.fullname }}</td>
+                                        <td>{{ emp.department if emp.department else 'Operations' }}</td>
+                                        <td class="text-end">₱ {{ "{:,.2f}".format(emp_basic) }}</td>
+                                        <td class="text-end">₱ {{ "{:,.2f}".format(emp_ot) }}</td>
+                                        <td class="text-end text-danger">₱ {{ "{:,.2f}".format(emp_deductions) }}</td>
+                                        <td class="text-end fw-bold text-success">₱ {{ "{:,.2f}".format(emp_net) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td>{{ user.employee_id if user and user.employee_id else 'GP-2026-001' }}</td>
+                                    <td class="fw-semibold">{{ user.fullname }}</td>
+                                    <td>{{ user.department if user and user.department else 'Operations' }}</td>
+                                    <td class="text-end">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
+                                    <td class="text-end">₱ 0.00</td>
+                                    <td class="text-end text-danger">₱ {{ "{:,.2f}".format(total_pretax_deductions) }}</td>
+                                    <td class="text-end fw-bold text-success">₱ {{ "{:,.2f}".format(net_take_home) }}</td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
 
@@ -817,10 +856,8 @@
 <!-- SCRIPT TO ISOLATE PRINTABLE DOCUMENT -->
 <script>
     function printElement(elemId) {
-        // Alisin muna ang printing class sa lahat ng elements
         document.querySelectorAll('.is-printing').forEach(el => el.classList.remove('is-printing'));
         
-        // Lagyan ng class lang ang mismong document na pinili
         const elementToPrint = document.getElementById(elemId);
         if (elementToPrint) {
             elementToPrint.classList.add('is-printing');
