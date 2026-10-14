@@ -15,29 +15,47 @@
         background-color: var(--gp-bg);
     }
 
+    /* --- CLEAN & PROFESSIONAL CARD STYLES --- */
     .report-card {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        border-radius: 8px;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
 
     .report-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        border-color: #CBD5E1;
     }
 
+    /* Subtle left accent borders instead of thick full borders */
+    .card-accent-success { border-left: 4px solid #10B981 !important; }
+    .card-accent-danger  { border-left: 4px solid #EF4444 !important; }
+    .card-accent-warning { border-left: 4px solid #F59E0B !important; }
+
+    /* Clean icons */
+    .report-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    /* --- DOCUMENT PRINTABLE STYLES --- */
     .document-paper {
         background: #FFFFFF;
         border: 1px solid #CBD5E1;
         border-radius: 8px;
-        padding: 2.5rem;
+        padding: 2rem;
         color: #0F172A;
         font-family: Arial, Helvetica, sans-serif;
         box-sizing: border-box;
         width: 100%;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
     .doc-table {
@@ -67,11 +85,11 @@
     .doc-section-title {
         background-color: #F1F5F9 !important;
         font-weight: 700;
-        font-size: 0.78rem;
+        font-size: 0.75rem;
         color: var(--gp-navy);
         padding: 6px 10px;
-        border-left: 4px solid var(--gp-blue);
-        margin-top: 15px;
+        border-left: 3px solid var(--gp-blue);
+        margin-top: 12px;
         margin-bottom: 8px;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -122,49 +140,58 @@
 </style>
 
 <div class="container py-4 no-print">
+    <!-- PAGE HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold mb-1" style="color: var(--gp-navy);"><i class="bi bi-file-earmark-spreadsheet me-2"></i>DTR & Printable Reports</h4>
+            <h5 class="fw-bold mb-1" style="color: var(--gp-navy);">
+                <i class="bi bi-file-earmark-spreadsheet me-2"></i>DTR & Printable Reports
+            </h5>
             <p class="text-muted small mb-0">Generate and print official Certificates of Daily Time Record, Payslips, and Master Payroll Registers.</p>
         </div>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-3 fw-semibold">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-2 fw-semibold">
             <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
         </a>
     </div>
 
     <!-- REPORT SELECTION CARDS -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-6">
-            <div class="report-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-success">
+    <div class="row g-3 mb-4">
+        <!-- PAYSLIP CARD -->
+        <div class="col-lg-6">
+            <div class="report-card p-3 h-100 d-flex flex-column justify-content-between card-accent-success">
                 <div>
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h5 class="fw-bold text-dark mb-0">Itemized Employee Payslip</h5>
-                        <i class="bi bi-file-earmark-text fs-2 text-success"></i>
+                        <h6 class="fw-bold text-dark mb-0">Itemized Employee Payslip</h6>
+                        <div class="report-icon bg-success-subtle text-success">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
                     </div>
-                    <p class="text-muted small">Detailed gross pay, statutory deductions, and net compensation statement.</p>
+                    <p class="text-muted small mb-3">Detailed gross pay, statutory deductions, and net compensation statement.</p>
                 </div>
-                <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-success btn-sm rounded-3 flex-grow-1 fw-bold" data-bs-toggle="modal" data-bs-target="#viewPayslipModal">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-sm rounded-2 flex-grow-1 fw-semibold" data-bs-toggle="modal" data-bs-target="#viewPayslipModal">
                         <i class="bi bi-eye me-1"></i> View & Print Payslip
                     </button>
-                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-success btn-sm rounded-3">
+                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-success btn-sm rounded-2">
                         <i class="bi bi-download me-1"></i> CSV
                     </a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="report-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-danger">
+        <!-- DTR CARD -->
+        <div class="col-lg-6">
+            <div class="report-card p-3 h-100 d-flex flex-column justify-content-between card-accent-danger">
                 <div>
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h5 class="fw-bold text-dark mb-0">Certificate of Daily Time Record (DTR)</h5>
-                        <i class="bi bi-printer fs-2 text-danger"></i>
+                        <h6 class="fw-bold text-dark mb-0">Certificate of Daily Time Record (DTR)</h6>
+                        <div class="report-icon bg-danger-subtle text-danger">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
                     </div>
-                    <p class="text-muted small">Official record of daily shift timestamps and tardiness logs.</p>
+                    <p class="text-muted small mb-3">Official record of daily shift timestamps and tardiness logs.</p>
                 </div>
-                <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-danger btn-sm rounded-3 flex-grow-1 fw-bold" data-bs-toggle="modal" data-bs-target="#viewDTRModal">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-danger btn-sm rounded-2 flex-grow-1 fw-semibold" data-bs-toggle="modal" data-bs-target="#viewDTRModal">
                         <i class="bi bi-eye me-1"></i> View & Print DTR
                     </button>
                 </div>
@@ -173,20 +200,22 @@
 
         <!-- HR / ADMIN EXCLUSIVE: MASTER PAYROLL REGISTER -->
         {% if user.role != 'employee' %}
-        <div class="col-md-12">
-            <div class="report-card p-4 h-100 d-flex flex-column justify-content-between border-start border-4 border-warning">
-                <div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h5 class="fw-bold text-dark mb-0">Departmental Master Payroll Register</h5>
-                        <i class="bi bi-journal-text fs-2 text-warning"></i>
+        <div class="col-12">
+            <div class="report-card p-3 h-100 d-flex flex-column justify-content-between card-accent-warning">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Departmental Master Payroll Register</h6>
+                        <p class="text-muted small mb-0">Comprehensive company-wide payroll summary and master payout register for HR auditing.</p>
                     </div>
-                    <p class="text-muted small">Comprehensive company-wide payroll summary and master payout register for HR auditing.</p>
+                    <div class="report-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
                 </div>
                 <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-warning btn-sm rounded-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#viewMasterPayrollModal">
+                    <button class="btn btn-warning btn-sm rounded-2 fw-semibold text-dark" data-bs-toggle="modal" data-bs-target="#viewMasterPayrollModal">
                         <i class="bi bi-eye me-1"></i> View & Print Master Payroll
                     </button>
-                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-warning btn-sm rounded-3 text-dark">
+                    <a href="{{ url_for('export_payroll_csv') }}" class="btn btn-outline-secondary btn-sm rounded-2 text-dark">
                         <i class="bi bi-download me-1"></i> Export Master CSV
                     </a>
                 </div>
@@ -196,9 +225,9 @@
     </div>
 
     <!-- DAILY TIME RECORD LIVE LOGS TABLE -->
-    <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-header bg-white py-3">
-            <h6 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-clock-history me-2"></i>Daily Time Record (DTR) Live Logs</h6>
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h6 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-list-columns-reverse me-2"></i>Daily Time Record (DTR) Live Logs</h6>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -226,9 +255,9 @@
                                 <td class="text-danger fw-bold">{{ t.clock_out if t.clock_out else 'Active Shift' }}</td>
                                 <td>
                                     {% if t.clock_out %}
-                                        <span class="badge bg-secondary">COMPLETED</span>
+                                        <span class="badge bg-secondary px-2 py-1">COMPLETED</span>
                                     {% else %}
-                                        <span class="badge bg-success">LOGGED IN</span>
+                                        <span class="badge bg-success px-2 py-1">LOGGED IN</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -250,7 +279,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header text-white no-print" style="background-color: var(--gp-navy);">
-                <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Official Employee Payslip</h5>
+                <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Official Employee Payslip</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
@@ -259,16 +288,16 @@
                         <tr>
                             <td style="border: none; padding: 0;">
                                 <div style="display: flex; align-items: center;">
-                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 40px; width: auto; margin-right: 12px;">
+                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
                                     <div>
-                                        <h4 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h4>
+                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h5>
                                         <span style="color: #64748B; font-size: 0.75rem;">Global Payments Asia-Pacific Philippines Inc. • Cubao, QC</span>
                                     </div>
                                 </div>
                             </td>
                             <td style="border: none; text-align: right; padding: 0;">
-                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">PAYSLIP STATEMENT</h4>
-                                <span class="badge bg-secondary" style="font-size: 0.7rem;">CONFIDENTIAL</span>
+                                <h5 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">PAYSLIP STATEMENT</h5>
+                                <span class="badge bg-secondary" style="font-size: 0.65rem;">CONFIDENTIAL</span>
                             </td>
                         </tr>
                     </table>
@@ -332,21 +361,21 @@
                         </tbody>
                     </table>
 
-                    <div style="background: #E0F2FE; border: 1px solid #7DD3FC; padding: 12px; border-radius: 6px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: bold; color: var(--gp-navy); font-size: 0.95rem;">NET TAKE-HOME PAY:</span>
-                        <span style="font-weight: bold; color: #0369A1; font-size: 1.2rem;">₱ 15,500.00</span>
+                    <div style="background: #E0F2FE; border: 1px solid #7DD3FC; padding: 10px 14px; border-radius: 6px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold; color: var(--gp-navy); font-size: 0.88rem;">NET TAKE-HOME PAY:</span>
+                        <span style="font-weight: bold; color: #0369A1; font-size: 1.1rem;">₱ 15,500.00</span>
                     </div>
 
-                    <div style="margin-top: 25px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
+                    <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
                         This is an official system-generated payslip from Global Payments HRIS. No physical signature is required.
                     </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light d-flex justify-content-between no-print">
-                <button type="button" onclick="window.print()" class="btn btn-success btn-sm rounded-3 fw-bold">
+            <div class="modal-footer bg-light d-flex justify-content-between no-print py-2">
+                <button type="button" onclick="window.print()" class="btn btn-success btn-sm rounded-2 fw-semibold">
                     <i class="bi bi-printer me-1"></i> Print / Save Payslip PDF
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-2" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -357,7 +386,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header text-white no-print" style="background-color: var(--gp-navy);">
-                <h5 class="modal-title fw-bold"><i class="bi bi-clock-history me-2"></i>Certificate of Daily Time Record (DTR)</h5>
+                <h6 class="modal-title fw-bold"><i class="bi bi-clock-history me-2"></i>Certificate of Daily Time Record (DTR)</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
@@ -366,16 +395,16 @@
                         <tr>
                             <td style="border: none; padding: 0;">
                                 <div style="display: flex; align-items: center;">
-                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 40px; width: auto; margin-right: 12px;">
+                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
                                     <div>
-                                        <h4 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h4>
+                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h5>
                                         <span style="color: #64748B; font-size: 0.75rem;">Timekeeping & Attendance Department • Official DTR</span>
                                     </div>
                                 </div>
                             </td>
                             <td style="border: none; text-align: right; padding: 0;">
-                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">TIME RECORD</h4>
-                                <span class="badge bg-danger" style="font-size: 0.7rem;">OFFICIAL LOG</span>
+                                <h5 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">TIME RECORD</h5>
+                                <span class="badge bg-danger" style="font-size: 0.65rem;">OFFICIAL LOG</span>
                             </td>
                         </tr>
                     </table>
@@ -440,16 +469,16 @@
                         </div>
                     </div>
 
-                    <div style="margin-top: 25px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
+                    <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
                         This is an official system-generated Certificate of Daily Time Record from Global Payments HRIS.
                     </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light d-flex justify-content-between no-print">
-                <button type="button" onclick="window.print()" class="btn btn-danger btn-sm rounded-3 fw-bold">
+            <div class="modal-footer bg-light d-flex justify-content-between no-print py-2">
+                <button type="button" onclick="window.print()" class="btn btn-danger btn-sm rounded-2 fw-semibold">
                     <i class="bi bi-printer me-1"></i> Print / Save DTR PDF
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-2" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -461,7 +490,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header text-white no-print" style="background-color: var(--gp-navy);">
-                <h5 class="modal-title fw-bold"><i class="bi bi-journal-text me-2"></i>Departmental Master Payroll Register</h5>
+                <h6 class="modal-title fw-bold"><i class="bi bi-journal-text me-2"></i>Departmental Master Payroll Register</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
@@ -470,16 +499,16 @@
                         <tr>
                             <td style="border: none; padding: 0;">
                                 <div style="display: flex; align-items: center;">
-                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 40px; width: auto; margin-right: 12px;">
+                                    <img src="{{ url_for('static', filename='gp_logo.png') }}" alt="Logo" style="height: 36px; width: auto; margin-right: 12px;">
                                     <div>
-                                        <h4 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h4>
+                                        <h5 style="font-weight: bold; margin: 0; color: var(--gp-navy); letter-spacing: 0.5px;">GLOBAL PAYMENTS</h5>
                                         <span style="color: #64748B; font-size: 0.75rem;">Departmental Master Payroll Summary • HR Audit Ready</span>
                                     </div>
                                 </div>
                             </td>
                             <td style="border: none; text-align: right; padding: 0;">
-                                <h4 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">MASTER REGISTER</h4>
-                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">AUDIT READY</span>
+                                <h5 style="font-weight: bold; text-transform: uppercase; margin: 0; color: var(--gp-navy);">MASTER REGISTER</h5>
+                                <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">AUDIT READY</span>
                             </td>
                         </tr>
                     </table>
@@ -519,16 +548,16 @@
                         </tbody>
                     </table>
 
-                    <div style="margin-top: 25px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
+                    <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #E2E8F0; text-align: center; color: #64748B; font-size: 0.72rem;">
                         Official HR Master Payroll Register generated for Global Payments Inc.
                     </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light d-flex justify-content-between no-print">
-                <button type="button" onclick="window.print()" class="btn btn-warning btn-sm rounded-3 fw-bold text-dark">
+            <div class="modal-footer bg-light d-flex justify-content-between no-print py-2">
+                <button type="button" onclick="window.print()" class="btn btn-warning btn-sm rounded-2 fw-semibold text-dark">
                     <i class="bi bi-printer me-1"></i> Print Master Register
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-2" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
