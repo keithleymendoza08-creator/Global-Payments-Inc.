@@ -279,7 +279,7 @@
             </li>
             <li>
                 <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#tardinessModal">
-                    <i class="bi bi-clock-history"></i> My Attendance Ledger
+                    <i class="bi bi-clock-history"></i> Tardiness & Undertime Ledger
                 </a>
             </li>
             <li>
@@ -289,7 +289,7 @@
             </li>
             <li>
                 <a href="{{ url_for('dashboard', tab='loans') }}" class="sidebar-link {% if active_tab == 'loans' %}active{% endif %}">
-                    <i class="bi bi-credit-card"></i> Loans & Deductions
+                    <i class="bi bi-credit-card"></i> Payroll Cut-Off & Deductions
                 </a>
             </li>
             <li>
@@ -310,7 +310,7 @@
             </li>
             <li>
                 <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#tardinessModal">
-                    <i class="bi bi-clock-history"></i> Tardiness Ledger
+                    <i class="bi bi-clock-history"></i> Tardiness & Undertime Ledger
                 </a>
             </li>
             <li>
@@ -320,12 +320,12 @@
             </li>
             <li>
                 <a href="{{ url_for('dashboard', tab='loans') }}" class="sidebar-link {% if active_tab == 'loans' %}active{% endif %}">
-                    <i class="bi bi-credit-card"></i> Loans & Deductions
+                    <i class="bi bi-credit-card"></i> Payroll Cut-Off & Deductions
                 </a>
             </li>
             <li>
                 <a href="{{ url_for('dashboard', tab='approvals') }}" class="sidebar-link {% if active_tab == 'approvals' %}active{% endif %}">
-                    <i class="bi bi-check2-square"></i> Pending Approvals
+                    <i class="bi bi-check2-square"></i> Multi-Level Approvals
                     {% if pending_leaves %}
                     <span class="sidebar-badge">{{ pending_leaves|length }}</span>
                     {% endif %}
@@ -510,6 +510,32 @@
         <!-- 2. LEAVE APPLICATION TAB -->
         <div id="leave-section" class="content-section {% if active_tab == 'leave' %}active{% endif %}">
             <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-calendar-check me-2"></i>Leave Application Module</h4>
+
+            {% set vl = user.vl_balance if user.vl_balance is defined and user.vl_balance is not none else 15 %}
+            {% set sl = user.sl_balance if user.sl_balance is defined and user.sl_balance is not none else 15 %}
+            {% set el = user.el_balance if user.el_balance is defined and user.el_balance is not none else 5 %}
+            <div class="row g-3 mb-4">
+                <div class="col-12"><div class="fw-bold small text-uppercase" style="color: #64748B; letter-spacing: .04em;">Leave Balances</div></div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm d-flex align-items-center gap-3" style="border-left: 4px solid #0EA5E9 !important;">
+                        <i class="bi bi-brightness-high fs-3" style="color: #0EA5E9;"></i>
+                        <div><div class="small text-muted">Vacation Leave</div><div class="fs-4 fw-bold" style="color: var(--gp-navy);">{{ '%g'|format(vl|float) }} <span class="small fw-normal text-muted">days</span></div></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm d-flex align-items-center gap-3" style="border-left: 4px solid #22C55E !important;">
+                        <i class="bi bi-heart-pulse fs-3" style="color: #22C55E;"></i>
+                        <div><div class="small text-muted">Sick Leave</div><div class="fs-4 fw-bold" style="color: var(--gp-navy);">{{ '%g'|format(sl|float) }} <span class="small fw-normal text-muted">days</span></div></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm d-flex align-items-center gap-3" style="border-left: 4px solid #F59E0B !important;">
+                        <i class="bi bi-exclamation-triangle fs-3" style="color: #F59E0B;"></i>
+                        <div><div class="small text-muted">Emergency Leave</div><div class="fs-4 fw-bold" style="color: var(--gp-navy);">{{ '%g'|format(el|float) }} <span class="small fw-normal text-muted">days</span></div></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row g-4">
                 <div class="col-lg-5">
                     <form action="{{ url_for('apply_leave') }}" method="POST" class="border p-4 rounded bg-light shadow-sm">
@@ -566,7 +592,7 @@
 
         <!-- 3. LOANS & DEDUCTIONS TAB -->
         <div id="loans-section" class="content-section {% if active_tab == 'loans' %}active{% endif %}">
-            <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-credit-card me-2"></i>Loans & Deductions Module</h4>
+            <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-credit-card me-2"></i>Payroll Cut-Off & Deductions Module</h4>
             <div class="row g-4">
                 <div class="col-lg-5">
                     <form action="{{ url_for('apply_loan') }}" method="POST" class="border p-4 rounded bg-light shadow-sm">
@@ -622,7 +648,7 @@
         {% if session.get('role') != 'employee' %}
         <!-- 4. PENDING APPROVALS TAB -->
         <div id="approvals-section" class="content-section {% if active_tab == 'approvals' %}active{% endif %}">
-            <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-check2-square me-2"></i>Pending Approvals Module</h4>
+            <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-check2-square me-2"></i>Multi-Level Approvals Module</h4>
             <div class="table-responsive">
                 <table class="table table-bordered table-sm text-center align-middle">
                     <thead class="table-light">
@@ -936,7 +962,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header text-white" style="background-color: var(--gp-navy);">
-                <h5 class="modal-title fw-bold"><i class="bi bi-clock-history me-2"></i>Attendance & Tardiness Ledger Log</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-clock-history me-2"></i>Tardiness & Undertime Ledger</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
