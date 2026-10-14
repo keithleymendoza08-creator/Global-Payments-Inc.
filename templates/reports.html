@@ -3,6 +3,19 @@
 {% block title %}DTR & Printable Reports - Global Payments HRIS{% endblock %}
 
 {% block content %}
+<!-- SETTING DYNAMIC STATUTORY DEDUCTION VARIABLES BASED ON DAILY RATE -->
+{% set daily = user.daily_rate if user and user.daily_rate else 1000.0 %}
+{% set est_monthly = daily * 22 %}
+{% set gross_cutoff = daily * 11 %} {# Semi-monthly gross (11 days) #}
+
+{# Statutory Computations (Employee Share Per Cutoff) #}
+{% set pagibig_ee = 100.00 %} {# Standard 100 per cutoff #}
+{% set philhealth_ee = (est_monthly * 0.025) / 2 %} {# 2.5% divided by 2 cutoffs #}
+{% set sss_ee = (est_monthly * 0.045) / 2 %} {# ~4.5% EE share divided by 2 cutoffs #}
+
+{% set total_pretax_deductions = sss_ee + philhealth_ee + pagibig_ee %}
+{% set net_take_home = gross_cutoff - total_pretax_deductions %}
+
 <style>
     :root {
         --gp-navy: #002B49;
@@ -95,29 +108,28 @@
         print-color-adjust: exact;
     }
 
-    /* --- STRICT OVERRIDE FOR A4 PRINT PREVIEW --- */
+    /* --- STRICT OVERRIDE FOR A4 PRINT PREVIEW (ISOLATED PER DOCUMENT) --- */
     @media print {
         @page {
             size: A4 portrait;
-            margin: 10mm;
+            margin: 8mm;
         }
 
         body * {
             visibility: hidden !important;
         }
 
-        #printablePayslip, #printablePayslip *, #printableDTR, #printableDTR *, #printableMasterPayroll, #printableMasterPayroll * {
+        .is-printing, .is-printing * {
             visibility: visible !important;
         }
 
-        #printablePayslip, #printableDTR, #printableMasterPayroll {
-            position: fixed !important;
+        .is-printing {
+            position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            height: auto !important;
             margin: 0 !important;
-            padding: 10mm !important;
+            padding: 5mm !important;
             border: none !important;
             box-shadow: none !important;
             background: #FFFFFF !important;
@@ -381,8 +393,8 @@
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">15-Oct-2026</td>
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">01-Oct-2026</td>
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">15-Oct-2026</td>
-                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold text-primary">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
-                                <td style="padding: 3px;">₱ {{ "{:,.2f}".format((user.daily_rate if user and user.daily_rate else 1000) * 22) }}</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold text-primary">₱ {{ "{:,.2f}".format(daily) }}</td>
+                                <td style="padding: 3px;">₱ {{ "{:,.2f}".format(est_monthly) }}</td>
                             </tr>
                         </table>
                     </div>
@@ -396,16 +408,16 @@
                             <tr style="background-color: #E2E8F0; font-weight: bold;">
                                 <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Current</td>
                                 <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Gross</td>
-                                <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Pre-Tax / Non-Taxable</td>
-                                <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Taxes / Deductions</td>
+                                <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Pre-Tax Deductions</td>
+                                <td style="padding: 3px; width: 20%; border-right: 1px solid #CBD5E1;">Taxes</td>
                                 <td style="padding: 3px; width: 20%;">Net Pay</td>
                             </tr>
                             <tr>
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">This Pay Period</td>
-                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
-                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
+                                <td style="padding: 3px; border-right: 1px solid #CBD5E1;" class="text-danger">₱ {{ "{:,.2f}".format(total_pretax_deductions) }}</td>
                                 <td style="padding: 3px; border-right: 1px solid #CBD5E1;">₱ 0.00</td>
-                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(net_take_home) }}</td>
                             </tr>
                         </table>
                     </div>
@@ -427,9 +439,9 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td style="padding: 2px 6px;">Regular Base Pay (Tax Free)</td>
-                                        <td style="padding: 2px 6px;" class="text-end">8.00</td>
-                                        <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                        <td style="padding: 2px 6px;">Regular Base Pay (11 Days)</td>
+                                        <td style="padding: 2px 6px;" class="text-end">88.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">Meal Allowance Non Taxable</td>
@@ -462,7 +474,7 @@
 
                         <!-- Right Side: Pre-Tax, Tax & After Tax Deductions -->
                         <div class="col-6">
-                            <!-- Pre-Tax Deductions -->
+                            <!-- Pre-Tax Deductions (DYNAMIC BASED ON DAILY RATE) -->
                             <div style="background-color: #7DA2C2; color: #FFF; font-weight: bold; padding: 3px 8px; font-size: 0.7rem;">
                                 Pre-Tax Deductions
                             </div>
@@ -476,15 +488,15 @@
                                 <tbody>
                                     <tr>
                                         <td style="padding: 2px 6px;">HDMF EE Contribution (Pag-IBIG)</td>
-                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(pagibig_ee) }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">PHILHEALTH EE Contribution</td>
-                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(philhealth_ee) }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">SSS EE Contribution</td>
-                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(sss_ee) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -496,7 +508,7 @@
                             <table class="w-100" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
                                 <tbody>
                                     <tr>
-                                        <td style="padding: 2px 6px;">Withholding Tax (BIR - Tax Free Base)</td>
+                                        <td style="padding: 2px 6px;">Withholding Tax (BIR - Tax Exempt)</td>
                                         <td style="padding: 2px 6px;" class="text-end fw-bold text-success">0.00</td>
                                     </tr>
                                 </tbody>
@@ -572,7 +584,7 @@
                                 <td style="padding: 3px;">Savings</td>
                                 <td style="padding: 3px;">Cubao QC</td>
                                 <td style="padding: 3px;">0000******1234</td>
-                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                <td style="padding: 3px;" class="fw-bold text-success">₱ {{ "{:,.2f}".format(net_take_home) }}</td>
                             </tr>
                         </table>
                     </div>
@@ -585,11 +597,11 @@
                         <table class="w-100" style="font-size: 0.7rem; border: 1px solid #CBD5E1; border-top: none;">
                             <tr>
                                 <td style="padding: 2px 6px; width: 70%;">Non Taxable Earnings YTD</td>
-                                <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 2px 6px;">Pre Tax Deductions YTD</td>
-                                <td style="padding: 2px 6px;" class="text-end">₱ 0.00</td>
+                                <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(total_pretax_deductions) }}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 2px 6px;">Total Tax Deductions YTD</td>
@@ -597,20 +609,20 @@
                             </tr>
                             <tr>
                                 <td style="padding: 2px 6px;" class="fw-bold">Total Earnings YTD</td>
-                                <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(user.daily_rate) if user and user.daily_rate else '1,000.00' }}</td>
+                                <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff) }}</td>
                             </tr>
                         </table>
                     </div>
 
                     <!-- MESSAGE SECTION -->
                     <div style="border: 1px solid #CBD5E1; padding: 6px; font-size: 0.7rem; background: #F8FAFC;">
-                        <strong>Message(s):</strong> System generated tax-free base payslip based on daily rate. No physical signature required.
+                        <strong>Message(s):</strong> System computed statutory contributions based on employee daily rate. No physical signature required.
                     </div>
 
                 </div>
             </div>
             <div class="modal-footer bg-light d-flex justify-content-between no-print py-2">
-                <button type="button" onclick="window.print()" class="btn btn-success btn-sm rounded-2 fw-semibold">
+                <button type="button" onclick="printElement('printablePayslip')" class="btn btn-success btn-sm rounded-2 fw-semibold">
                     <i class="bi bi-printer me-1"></i> Print / Save Payslip PDF
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm rounded-2" data-bs-dismiss="modal">Close</button>
@@ -713,7 +725,7 @@
                 </div>
             </div>
             <div class="modal-footer bg-light d-flex justify-content-between no-print py-2">
-                <button type="button" onclick="window.print()" class="btn btn-danger btn-sm rounded-2 fw-semibold">
+                <button type="button" onclick="printElement('printableDTR')" class="btn btn-danger btn-sm rounded-2 fw-semibold">
                     <i class="bi bi-printer me-1"></i> Print / Save DTR PDF
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm rounded-2" data-bs-dismiss="modal">Close</button>
@@ -792,7 +804,7 @@
                 </div>
             </div>
             <div class="modal-footer bg-light d-flex justify-content-between no-print py-2">
-                <button type="button" onclick="window.print()" class="btn btn-warning btn-sm rounded-2 fw-semibold text-dark">
+                <button type="button" onclick="printElement('printableMasterPayroll')" class="btn btn-warning btn-sm rounded-2 fw-semibold text-dark">
                     <i class="bi bi-printer me-1"></i> Print Master Register
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm rounded-2" data-bs-dismiss="modal">Close</button>
@@ -801,4 +813,19 @@
     </div>
 </div>
 {% endif %}
+
+<!-- SCRIPT TO ISOLATE PRINTABLE DOCUMENT -->
+<script>
+    function printElement(elemId) {
+        // Alisin muna ang printing class sa lahat ng elements
+        document.querySelectorAll('.is-printing').forEach(el => el.classList.remove('is-printing'));
+        
+        // Lagyan ng class lang ang mismong document na pinili
+        const elementToPrint = document.getElementById(elemId);
+        if (elementToPrint) {
+            elementToPrint.classList.add('is-printing');
+            window.print();
+        }
+    }
+</script>
 {% endblock %}
