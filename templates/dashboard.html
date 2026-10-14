@@ -202,17 +202,47 @@
         gap: 6px;
     }
 
+    .calendar-card {
+        position: relative;
+        overflow: hidden;
+    }
+    .calendar-card .cal-accent {
+        position: absolute; top: 0; left: 0; right: 0; height: 4px;
+        background: linear-gradient(90deg, #00A3E0, #22C55E, #F59E0B);
+    }
+    .calendar-cell { transition: transform .12s ease, box-shadow .12s ease; cursor: default; }
+    .calendar-cell:not(.opacity-0):hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12); }
+    .calendar-cell.today::after {
+        content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+        width: 5px; height: 5px; border-radius: 50%; background: #00A3E0;
+    }
+    .calendar-cell.today { box-shadow: 0 0 0 2px #00A3E0 inset; }
+
     .event-item {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.8rem;
-        padding: 5px 0;
-        border-bottom: 1px dashed #E2E8F0;
+        gap: 10px;
+        padding: 7px 8px;
+        border-radius: 10px;
+        background: #F8FAFC;
+        margin-bottom: 6px;
+        transition: background .12s ease;
     }
-    .event-item:last-child { border-bottom: none; }
-    .event-date { font-weight: 700; min-width: 58px; color: #334155; }
-    .event-name { color: #475569; }
+    .event-item:hover { background: #F1F5F9; }
+    .event-badge {
+        flex: 0 0 auto; width: 42px; padding: 3px 0; text-align: center; border-radius: 8px;
+        line-height: 1.05; border: 1.5px solid currentColor; background: #fff;
+    }
+    .event-badge .m { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .event-badge .d { font-size: 1.05rem; font-weight: 800; }
+    .event-body { flex: 1 1 auto; min-width: 0; }
+    .event-title { font-size: 0.82rem; font-weight: 700; color: #1E293B; line-height: 1.2; }
+    .event-sub { font-size: 0.7rem; color: #64748B; }
+    .event-chip {
+        flex: 0 0 auto; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+        background: #E2E8F0; color: #475569; white-space: nowrap;
+    }
+    .event-chip.today-chip { background: #DCFCE7; color: #166534; }
 
     .legend-dot {
         width: 10px;
@@ -365,6 +395,7 @@
                 <!-- INTERACTIVE CALENDAR WIDGET -->
                 <div class="col-lg-4">
                     <div class="calendar-card h-100 d-flex flex-column justify-content-between">
+                        <div class="cal-accent"></div>
                         <div>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-calendar3 me-2"></i>Company Calendar</h6>
@@ -381,7 +412,7 @@
                             </div>
                         </div>
                         <div class="pt-2 border-top mt-3">
-                            <div class="fw-bold small mb-1" style="color: var(--gp-navy);">Upcoming Events</div>
+                            <div class="fw-bold small mb-2" style="color: var(--gp-navy);"><i class="bi bi-calendar-event me-1"></i>Upcoming Events</div>
                             <div id="upcomingEvents" class="mb-3"></div>
                             <div class="row g-2">
                                 <div class="col-6">
@@ -651,21 +682,61 @@
                 {% set ns.count = ns.count + 1 %}
             {% endfor %}
             <div class="calendar-card mt-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                     <h5 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-lock me-2"></i>Payroll Locking</h5>
-                    {% if payroll_locked is defined and payroll_locked %}
+                    {% if payroll_locked %}
                     <span class="badge bg-success"><i class="bi bi-lock-fill me-1"></i>Locked</span>
                     {% else %}
                     <span class="badge bg-warning text-dark"><i class="bi bi-unlock me-1"></i>Open for Editing</span>
                     {% endif %}
                 </div>
                 <p class="text-muted small mb-3">HR audits totals and locks period against retroactive edits.</p>
+
+                <form method="GET" action="{{ url_for('dashboard') }}" class="row g-2 align-items-end mb-3">
+                    <input type="hidden" name="tab" value="payroll">
+                    <div class="col-sm-5 col-md-4">
+                        <label class="form-label small fw-bold mb-1">Select Date</label>
+                        <input type="date" name="period_date" id="lockPeriodDate" class="form-control form-control-sm" value="{{ payroll_period_date }}" onchange="this.form.submit()">
+                    </div>
+                    <div class="col-sm-7 col-md-8">
+                        <div class="small text-muted">Cut-off period</div>
+                        <div class="fw-bold" style="color: var(--gp-navy);">{{ payroll_period_label }}
+                            {% if payroll_locked and payroll_lock_info %}
+                            <span class="text-muted fw-normal small">- locked by {{ payroll_lock_info.locked_by_name }}{% if payroll_lock_info.locked_at %} on {{ payroll_lock_info.locked_at.strftime('%b %d, %Y %I:%M %p') }}{% endif %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+
                 <div class="row g-3 text-center">
                     <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Employees</div><div class="fw-bold">{{ ns.count }}</div></div></div>
                     <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Total Gross Pay</div><div class="fw-bold">₱{{ "%.2f"|format(ns.gross) }}</div></div></div>
                     <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Total Deductions</div><div class="fw-bold text-danger">₱{{ "%.2f"|format(ns.ded) }}</div></div></div>
                     <div class="col-6 col-md-3"><div class="p-2 rounded-3 bg-light border"><div class="small text-muted">Total Net Pay</div><div class="fw-bold text-success">₱{{ "%.2f"|format(ns.net) }}</div></div></div>
                 </div>
+                <div class="mt-3 text-end">
+                    {% if payroll_locked %}
+                    <form action="{{ url_for('unlock_payroll') }}" method="POST" class="d-inline" onsubmit="return confirm('Unlock {{ payroll_period_label }}? Figures will be recomputed live again.');">
+                        <input type="hidden" name="period_date" value="{{ payroll_period_date }}">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm px-3"><i class="bi bi-unlock me-1"></i>Unlock Payroll</button>
+                    </form>
+                    {% else %}
+                    <form action="{{ url_for('lock_payroll') }}" method="POST" class="d-inline" onsubmit="return confirm('Lock payroll for {{ payroll_period_label }}? Totals will be frozen against retroactive edits.');">
+                        <input type="hidden" name="period_date" value="{{ payroll_period_date }}">
+                        <button type="submit" class="btn btn-primary btn-sm px-3" style="background-color: var(--gp-blue);"><i class="bi bi-lock me-1"></i>Audit &amp; Lock Payroll</button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                {% if payroll_locks %}
+                <hr>
+                <div class="small fw-bold mb-2" style="color: var(--gp-navy);">Locked Periods</div>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for lk in payroll_locks %}
+                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle fw-semibold"><i class="bi bi-lock-fill me-1"></i>{{ lk.period_label }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endif %}
@@ -773,6 +844,7 @@
             </div>
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('register') }}" class="btn btn-success rounded-3 px-4"><i class="bi bi-person-plus me-1"></i>Register New Employee</a>
                 <button type="button" class="btn btn-primary rounded-3 px-4" style="background-color: var(--gp-blue);" id="openShiftFromRegistration">
                     <i class="bi bi-calendar-range me-1"></i>Assign Shift
                 </button>
@@ -809,6 +881,17 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Shift End</label>
                             <input type="time" name="shift_end" class="form-control" value="18:00" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Rest Days</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            {% for d in ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="rest_days" value="{{ d }}" id="rest_{{ d }}" {% if d in ['Saturday','Sunday'] %}checked{% endif %}>
+                                <label class="form-check-label small" for="rest_{{ d }}">{{ d[:3] }}</label>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                     <div class="mb-3">
@@ -982,6 +1065,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const dayOfWeekName = dayNames[new Date(year, month, day).getDay()];
         const hol = holidays[k];
 
+        if (day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
+            dayCell.classList.add('today');
+        }
+
         if (day === 15 || day === 30) {
             dayCell.classList.add('payday');
             dayCell.title = 'Payday';
@@ -1008,9 +1095,9 @@ document.addEventListener('DOMContentLoaded', function() {
     for (let d = new Date(today); d <= limit; d.setDate(d.getDate() + 1)) {
         const y = d.getFullYear(), m = d.getMonth(), dd = d.getDate(), k = key(y, m, dd);
         const last = new Date(y, m + 1, 0).getDate();
-        if (dd === 15 || dd === Math.min(30, last)) events.push({ date: new Date(d), color: '#22C55E', name: 'Payday' });
-        if (holidays[k]) events.push({ date: new Date(d), color: holidays[k].type === 'regular' ? '#EF4444' : '#F59E0B', name: (holidays[k].type === 'regular' ? 'Regular Holiday - ' : 'Special Holiday - ') + holidays[k].name });
-        if (leaveDays[k]) events.push({ date: new Date(d), color: '#0EA5E9', name: leaveDays[k] });
+        if (dd === 15 || dd === Math.min(30, last)) events.push({ date: new Date(d), color: '#16A34A', title: 'Payday', sub: 'Salary release' });
+        if (holidays[k]) events.push({ date: new Date(d), color: holidays[k].type === 'regular' ? '#DC2626' : '#D97706', title: holidays[k].name, sub: holidays[k].type === 'regular' ? 'Regular Holiday' : 'Special Holiday' });
+        if (leaveDays[k]) events.push({ date: new Date(d), color: '#0284C7', title: leaveDays[k], sub: 'Your leave' });
     }
     const list = document.getElementById('upcomingEvents');
     if (list) {
@@ -1018,8 +1105,15 @@ document.addEventListener('DOMContentLoaded', function() {
             list.innerHTML = '<div class="small text-muted">No upcoming events.</div>';
         } else {
             list.innerHTML = events.slice(0, 6).map(ev => {
-                const label = ev.date.getTime() === today.getTime() ? 'Today' : ev.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                return '<div class="event-item"><span class="legend-dot" style="background-color:' + ev.color + ';"></span><span class="event-date">' + label + '</span><span class="event-name">' + ev.name + '</span></div>';
+                const diff = Math.round((ev.date - today) / 86400000);
+                const chip = diff === 0 ? '<span class="event-chip today-chip">Today</span>'
+                           : diff === 1 ? '<span class="event-chip">Tomorrow</span>'
+                           : '<span class="event-chip">in ' + diff + ' days</span>';
+                const mon = ev.date.toLocaleDateString('en-US', { month: 'short' });
+                return '<div class="event-item">'
+                     + '<div class="event-badge" style="color:' + ev.color + ';"><div class="m">' + mon + '</div><div class="d">' + ev.date.getDate() + '</div></div>'
+                     + '<div class="event-body"><div class="event-title">' + ev.title + '</div><div class="event-sub">' + ev.sub + '</div></div>'
+                     + chip + '</div>';
             }).join('');
         }
     }
