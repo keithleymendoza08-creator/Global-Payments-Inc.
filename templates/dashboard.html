@@ -171,10 +171,22 @@
         border: 2px solid #22C55E;
     }
 
+    .calendar-cell.reg-holiday {
+        background-color: #FEE2E2 !important;
+        color: #991B1B !important;
+        border: 2px solid #EF4444;
+    }
+
     .calendar-cell.spec-holiday {
         background-color: #FEF3C7 !important;
         color: #92400E !important;
         border: 2px solid #F59E0B;
+    }
+
+    .calendar-cell.leave-day {
+        background-color: #E0F2FE !important;
+        color: #075985 !important;
+        border: 2px solid #0EA5E9;
     }
 
     .calendar-cell.rest-day {
@@ -195,14 +207,6 @@
         height: 10px;
         border-radius: 50%;
         display: inline-block;
-    }
-
-    .leave-balance-badge {
-        background: #F1F5F9;
-        border: 1px solid #CBD5E1;
-        border-radius: 8px;
-        padding: 10px;
-        text-align: center;
     }
 </style>
 
@@ -254,7 +258,7 @@
             {% else %}
             <li>
                 <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#shiftAssignmentModal">
-                    <i class="bi bi-person-gear"></i> Shift Management & Reg
+                    <i class="bi bi-person-gear"></i> Shift Management
                 </a>
             </li>
             <li>
@@ -308,9 +312,10 @@
     <!-- MAIN CONTENT AREA WITH TABS -->
     <main class="main-dashboard-content">
         
-        <!-- 1. HOME TAB -->
+        <!-- 1. HOME TAB (Lahat ng original contents sa Home) -->
         <div id="home-section" class="content-section {% if active_tab == 'home' %}active{% endif %}">
             <div class="row g-4 mb-5">
+                <!-- CORPORATE PAYROLL HERO SECTION -->
                 <div class="col-lg-8">
                     <div class="payroll-hero-card h-100" id="payroll-info">
                         <div class="row align-items-center g-4">
@@ -325,12 +330,27 @@
                                     Payroll is responsible for ensuring all Global Payments employees are paid accurately and on time. We manage and process pay, from approved time reporting to final paycheck delivery, while ensuring compliance with tax and legal requirements.
                                 </p>
                                 <h6 class="fw-bold mb-2" style="color: var(--gp-navy);">How Payroll Can Help You:</h6>
-                                <p class="text-muted small mb-3">We're available to assist with questions related to paystubs, computations, statutory deductions, loans, and payroll locking.</p>
+                                <p class="text-muted small mb-3">We're available to assist with questions related to:</p>
+                                <ul class="list-unstyled mb-0 small">
+                                    <li class="mb-2 d-flex align-items-start">
+                                        <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
+                                        <div><strong>Payroll Calendars & Paystubs:</strong> Understanding pay dates and reviewing your pay statements.</div>
+                                    </li>
+                                    <li class="mb-2 d-flex align-items-start">
+                                        <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
+                                        <div><strong>Gross-to-Net Pay Processing:</strong> Ensuring your earnings, statutory contributions, and deductions are calculated correctly.</div>
+                                    </li>
+                                    <li class="mb-2 d-flex align-items-start">
+                                        <i class="bi bi-dot text-primary fs-4 me-1 line-height-1"></i>
+                                        <div><strong>Approved Time & Payments:</strong> Processing EIS-approved hours, leaves, night diff, rice subsidies, bonuses, and other pay elements.</div>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- INTERACTIVE CALENDAR WIDGET -->
                 <div class="col-lg-4">
                     <div class="calendar-card h-100 d-flex flex-column justify-content-between">
                         <div>
@@ -368,88 +388,65 @@
                 </div>
             </div>
 
-            <!-- HRIS SYSTEM WORKFLOW OVERVIEW GRID (Kasama na ang Registration at Payroll Locking) -->
+            <!-- HRIS SYSTEM WORKFLOW OVERVIEW GRID -->
             <h5 class="fw-bold mb-1" style="color: var(--gp-navy);">Timekeeping, Leave & Payroll (HRIS) Overview</h5>
             <p class="text-muted small mb-4">Automated Timekeeping, Leave, and Compensation Management System Modules</p>
 
             <div class="row g-3">
                 <div class="col-md-6 col-lg-3">
                     <div class="module-summary-card">
-                        <span class="module-num-badge">1</span><strong>Registration & Shift Assignment</strong>[cite: 3, 4]
-                        <p class="small text-muted mb-0 mt-1">Enter profiles and rates; assign standard or flexible shifts[cite: 3, 4].</p>
+                        <span class="module-num-badge">1</span><strong>Registration & Shift Assignment</strong>
+                        <p class="small text-muted mb-0 mt-1">Enter profiles and rates; assign standard or flexible shifts.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="module-summary-card">
-                        <span class="module-num-badge">2</span><strong>Daily Time-In / Time-Out</strong>[cite: 3]
-                        <p class="small text-muted mb-0 mt-1">Compare clock timestamps against assigned shift boundaries[cite: 3].</p>
+                        <span class="module-num-badge">2</span><strong>Daily Time-In / Time-Out</strong>
+                        <p class="small text-muted mb-0 mt-1">Compare clock timestamps against assigned shift boundaries.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="module-summary-card">
-                        <span class="module-num-badge">3</span><strong>Tardiness & Undertime Ledger</strong>[cite: 3]
-                        <p class="small text-muted mb-0 mt-1">Calculate late minutes after grace period and daily undertime[cite: 3].</p>
+                        <span class="module-num-badge">3</span><strong>Tardiness & Undertime Ledger</strong>
+                        <p class="small text-muted mb-0 mt-1">Calculate late minutes after grace period and daily undertime.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="module-summary-card">
-                        <span class="module-num-badge">4</span><strong>Leave Application</strong>[cite: 3, 6]
-                        <p class="small text-muted mb-0 mt-1">File leave type; validate available leave balance[cite: 3, 6].</p>
+                        <span class="module-num-badge">4</span><strong>Leave Application</strong>
+                        <p class="small text-muted mb-0 mt-1">File leave type; validate available leave balance.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="module-summary-card">
-                        <span class="module-num-badge">5</span><strong>Multi-Level Approval</strong>[cite: 3]
-                        <p class="small text-muted mb-0 mt-1">Supervisor endorses; HR approves and updates leave credits[cite: 3].</p>
+                        <span class="module-num-badge">5</span><strong>Multi-Level Approval</strong>
+                        <p class="small text-muted mb-0 mt-1">Supervisor endorses; HR approves and updates leave credits.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="module-summary-card">
-                        <span class="module-num-badge">6</span><strong>Payroll Cut-Off & Deductions</strong>[cite: 3]
-                        <p class="small text-muted mb-0 mt-1">Aggregate work, overtime, statutory deductions, loans, and taxes[cite: 3].</p>
+                        <span class="module-num-badge">6</span><strong>Payroll Cut-Off & Deductions</strong>
+                        <p class="small text-muted mb-0 mt-1">Aggregate work, overtime, statutory deductions, loans, and taxes.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="module-summary-card">
-                        <span class="module-num-badge">7</span><strong>Payroll Locking</strong>[cite: 3, 5]
-                        <p class="small text-muted mb-0 mt-1">HR audits totals and locks period against retroactive edits[cite: 3, 5].</p>
+                        <span class="module-num-badge">7</span><strong>Payroll Locking</strong>
+                        <p class="small text-muted mb-0 mt-1">HR audits totals and locks period against retroactive edits.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="module-summary-card">
-                        <span class="module-num-badge">8</span><strong>DTR & Payslip Printing</strong>[cite: 3]
-                        <p class="small text-muted mb-0 mt-1">Generate employee and departmental payroll documents[cite: 3].</p>
+                        <span class="module-num-badge">8</span><strong>DTR & Payslip Printing</strong>
+                        <p class="small text-muted mb-0 mt-1">Generate employee and departmental payroll documents.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 2. LEAVE APPLICATION TAB (May kasamang Leave Balances) -->
+        <!-- 2. LEAVE APPLICATION TAB -->
         <div id="leave-section" class="content-section {% if active_tab == 'leave' %}active{% endif %}">
             <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-calendar-check me-2"></i>Leave Application Module</h4>
-            
-            <!-- Available Leave Balance Cards -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="leave-balance-badge">
-                        <span class="small text-muted d-block fw-bold">Vacation Leave (VL) Balance</span>
-                        <h4 class="fw-bold text-dark mb-0">{{ user.vl_balance if user.vl_balance is not none else '15' }} Days</h4>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="leave-balance-badge">
-                        <span class="small text-muted d-block fw-bold">Sick Leave (SL) Balance</span>
-                        <h4 class="fw-bold text-dark mb-0">{{ user.sl_balance if user.sl_balance is not none else '15' }} Days</h4>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="leave-balance-badge">
-                        <span class="small text-muted d-block fw-bold">Emergency Leave (EL) Balance</span>
-                        <h4 class="fw-bold text-dark mb-0">{{ user.el_balance if user.el_balance is not none else '5' }} Days</h4>
-                    </div>
-                </div>
-            </div>
-
             <div class="row g-4">
                 <div class="col-lg-5">
                     <form action="{{ url_for('apply_leave') }}" method="POST" class="border p-4 rounded bg-light shadow-sm">
@@ -509,7 +506,7 @@
             <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-credit-card me-2"></i>Loans & Deductions Module</h4>
             <div class="row g-4">
                 <div class="col-lg-5">
-                    <form action="{{ url_for('loan_apply') if 'loan_apply' in url_for.__globals__ else url_for('apply_loan') }}" method="POST" class="border p-4 rounded bg-light shadow-sm">
+                    <form action="{{ url_for('apply_loan') }}" method="POST" class="border p-4 rounded bg-light shadow-sm">
                         <h6 class="fw-bold mb-3 text-dark">Apply for Loan</h6>
                         <div class="mb-3">
                             <label class="form-label small fw-bold">Loan Type</label>
@@ -587,18 +584,9 @@
             </div>
         </div>
 
-        <!-- 5. PAYROLL PROCESSING TAB (May kasamang Payroll Locking feature) -->
+        <!-- 5. PAYROLL PROCESSING TAB -->
         <div id="payroll-section" class="content-section {% if active_tab == 'payroll' %}active{% endif %}">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-calculator me-2"></i>Payroll Processing & Locking Module</h4>
-                <!-- Payroll Locking Form / Button -->
-                <form action="{{ url_for('calculate_payroll') }}" method="POST" class="d-flex gap-2">
-                    <input type="date" name="period_start" class="form-control form-control-sm" value="2026-10-01" required>
-                    <input type="date" name="period_end" class="form-control form-control-sm" value="2026-10-15" required>
-                    <button type="submit" class="btn btn-danger btn-sm fw-bold text-nowrap"><i class="bi bi-lock-fill me-1"></i>Process & Lock Payroll</button>
-                </form>
-            </div>
-            
+            <h4 class="fw-bold mb-3" style="color: var(--gp-navy);"><i class="bi bi-calculator me-2"></i>Payroll Processing Module</h4>
             <div class="table-responsive">
                 <table class="table table-bordered table-sm text-center align-middle">
                     <thead class="table-light">
@@ -627,7 +615,7 @@
     </main>
 </div>
 
-<!-- MODALS (Profile, Shift Assignment & Registration, Timekeeping, Tardiness Ledger) -->
+<!-- MODALS (Profile, Shift Assignment, Timekeeping, Tardiness/Attendance Ledger) -->
 <div class="modal fade" id="employeeProfileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -650,6 +638,10 @@
                         <span class="fw-semibold text-dark">{{ user.email }}</span>
                     </div>
                     <div class="col-md-6">
+                        <label class="small text-muted d-block">Personal Number</label>
+                        <span class="fw-semibold text-dark">{{ user.personal_number if user.personal_number else 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-6">
                         <label class="small text-muted d-block">Department</label>
                         <span class="fw-semibold text-dark">{{ user.department }}</span>
                     </div>
@@ -661,28 +653,50 @@
                         <label class="small text-muted d-block">Daily Rate</label>
                         <span class="fw-semibold text-dark">₱ {{ user.daily_rate if user.daily_rate else '0.00' }}</span>
                     </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Hire Date</label>
+                        <span class="fw-semibold text-dark">{{ user.hire_date if user.hire_date else 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Shift Schedule</label>
+                        <span class="fw-semibold text-dark">{{ user.shift_start }} - {{ user.shift_end }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Rest Days</label>
+                        <span class="fw-semibold text-dark badge bg-secondary">{{ user.rest_days if user.rest_days else 'Saturday, Sunday' }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted d-block">Work Location</label>
+                        <span class="fw-semibold text-dark">{{ user.work_location if user.work_location else 'Cubao Quezon City' }}</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="small text-muted d-block">Personal Address</label>
+                        <span class="fw-semibold text-dark">{{ user.personal_address if user.personal_address else 'N/A' }}</span>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light">
+            <div class="modal-footer bg-light d-flex justify-content-between">
+                <a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm rounded-3 px-3" style="background-color: var(--gp-blue);">
+                    <i class="bi bi-person-lines-fill me-1"></i> Open Full Profile Page
+                </a>
                 <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- SHIFT ASSIGNMENT & NEW REGISTRATION MODAL -->
 <div class="modal fade" id="shiftAssignmentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header text-white" style="background-color: var(--gp-navy);">
-                <h5 class="modal-title fw-bold"><i class="bi bi-person-gear me-2"></i>Shift Schedule & Registration Management</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-calendar-range me-2"></i>Shift Schedule & Location Assignment</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ url_for('assign_shift') }}" method="POST">
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label for="user_id" class="form-label fw-bold">Select Employee for Shift Update</label>
-                        <select name="user_id" id="user_id" class="form-select">
+                        <label for="user_id" class="form-label fw-bold">Select Employee</label>
+                        <select name="user_id" id="user_id" class="form-select" required>
                             <option value="" disabled selected>Select employee...</option>
                             {% if employees %}
                                 {% for emp in employees %}
@@ -706,15 +720,9 @@
                         <input type="text" name="work_location" class="form-control" value="Cubao Quezon City" required>
                     </div>
                 </div>
-                <div class="modal-footer bg-light d-flex justify-content-between align-items-center">
-                    <!-- Link papunta sa Registration page para sa paggawa ng bagong employee profile -->
-                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-sm rounded-3">
-                        <i class="bi bi-person-plus me-1"></i> New Employee Registration Page
-                    </a>
-                    <div>
-                        <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary btn-sm rounded-3 px-4" style="background-color: var(--gp-blue);">Save Shift Assignment</button>
-                    </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4" style="background-color: var(--gp-blue);">Save Shift Assignment</button>
                 </div>
             </form>
         </div>
