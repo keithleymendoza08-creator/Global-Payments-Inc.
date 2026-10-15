@@ -451,7 +451,7 @@
                             </div>
 
                             <div class="section-eyebrow">Our Core Values</div>
-                            <div class="row g-3 mb-4">
+                            <div class="row g-3">
                                 <div class="col-6 col-md-4"><div class="value-tile"><span class="value-icon"><i class="bi bi-shield-check"></i></span><div><div class="value-name">Integrity</div><div class="value-desc">Honest in every transaction</div></div></div></div>
                                 <div class="col-6 col-md-4"><div class="value-tile"><span class="value-icon"><i class="bi bi-check2-circle"></i></span><div><div class="value-name">Accuracy</div><div class="value-desc">Every peso computed right</div></div></div></div>
                                 <div class="col-6 col-md-4"><div class="value-tile"><span class="value-icon"><i class="bi bi-award"></i></span><div><div class="value-name">Excellence</div><div class="value-desc">Quality in all we deliver</div></div></div></div>
@@ -460,29 +460,6 @@
                                 <div class="col-6 col-md-4"><div class="value-tile"><span class="value-icon"><i class="bi bi-heart"></i></span><div><div class="value-name">Respect</div><div class="value-desc">Valuing every person</div></div></div></div>
                             </div>
 
-                            <!-- CURRENT CUT-OFF -->
-                            <div class="cutoff-banner mb-3">
-                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                                    <div>
-                                        <div class="cutoff-eyebrow">Current Cut-Off</div>
-                                        <div class="cutoff-title" id="cutoffLabel"></div>
-                                    </div>
-                                    <span class="cutoff-pill" id="cutoffDaysLeft"></span>
-                                </div>
-                                <div class="cutoff-track mt-3"><div class="cutoff-fill" id="cutoffBar" style="width:0%;"></div></div>
-                                <div class="cutoff-foot"><i class="bi bi-cash-coin me-1"></i>Next payday: <strong id="nextPayday"></strong></div>
-                            </div>
-
-                            <!-- QUICK ACTIONS -->
-                            <div class="section-eyebrow">Quick Actions</div>
-                            <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="qa-btn qa-primary" data-bs-toggle="modal" data-bs-target="#timekeepingModal"><i class="bi bi-clock"></i>Time-In / Time-Out</button>
-                                <a href="{{ url_for('dashboard', tab='leave') }}" class="qa-btn"><i class="bi bi-calendar-check"></i>File Leave</a>
-                                {% if session.get('role') != 'employee' %}
-                                <a href="{{ url_for('dashboard', tab='approvals') }}" class="qa-btn"><i class="bi bi-check2-square"></i>Multi-Level Approvals</a>
-                                {% endif %}
-                                <a href="{{ url_for('export_payroll_csv') }}" class="qa-btn"><i class="bi bi-download"></i>{{ 'My Payslip (CSV)' if session.get('role') == 'employee' else 'Payroll Register (CSV)' }}</a>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1169,28 +1146,6 @@ document.addEventListener('DOMContentLoaded', function() {
             bootstrap.Modal.getOrCreateInstance(regEl).hide();
         });
     }
-
-    // Current cut-off progress + next payday
-    (function() {
-        const lbl = document.getElementById('cutoffLabel');
-        if (!lbl) return;
-        const now = new Date(); now.setHours(0, 0, 0, 0);
-        const y = now.getFullYear(), m = now.getMonth();
-        const last = new Date(y, m + 1, 0).getDate();
-        const first = now.getDate() <= 15;
-        const startD = first ? 1 : 16, endD = first ? 15 : last;
-        const mon = now.toLocaleDateString('en-US', { month: 'short' });
-        lbl.textContent = mon + ' ' + startD + '-' + endD;
-        const total = endD - startD + 1;
-        const elapsed = now.getDate() - startD + 1;
-        document.getElementById('cutoffBar').style.width = Math.min(100, Math.round(elapsed / total * 100)) + '%';
-        const left = endD - now.getDate();
-        document.getElementById('cutoffDaysLeft').textContent = left === 0 ? 'Cut-off ends today' : left + ' day' + (left === 1 ? '' : 's') + ' left';
-        const cands = [new Date(y, m, 15), new Date(y, m, Math.min(30, last)), new Date(y, m + 1, 15)];
-        const next = cands.find(d => d >= now);
-        const diff = Math.round((next - now) / 86400000);
-        document.getElementById('nextPayday').textContent = next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + (diff === 0 ? ' (today)' : ' (in ' + diff + ' day' + (diff === 1 ? '' : 's') + ')');
-    })();
 
     const calendarContainer = document.getElementById('calendarDaysContainer');
     if (!calendarContainer) return;
