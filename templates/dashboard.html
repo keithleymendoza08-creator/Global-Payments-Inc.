@@ -244,13 +244,17 @@
     }
     .event-chip.today-chip { background: #DCFCE7; color: #166534; }
 
-    .glance-tile {
-        text-align: center; padding: 12px 8px; border-radius: 12px; background: #FFFFFF;
+    .mvv-card {
+        height: 100%; padding: 14px 16px; border-radius: 12px; background: #FFFFFF;
         border: 1px solid #E2E8F0; border-top: 3px solid; box-shadow: 0 1px 3px rgba(15,23,42,.05);
     }
-    .glance-tile i { font-size: 1.3rem; }
-    .glance-num { font-size: 1.35rem; font-weight: 800; color: var(--gp-navy); line-height: 1.2; }
-    .glance-lbl { font-size: 0.72rem; color: #64748B; font-weight: 600; }
+    .mvv-title { font-weight: 800; font-size: 0.9rem; color: var(--gp-navy); display: flex; align-items: center; gap: 8px; }
+    .mvv-title i { font-size: 1.15rem; }
+    .mvv-text { font-size: 0.82rem; color: #475569; margin: 6px 0 0; line-height: 1.5; }
+    .value-chip {
+        display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700;
+        padding: 5px 12px; border-radius: 999px; background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A;
+    }
 
     .legend-dot {
         width: 10px;
@@ -401,23 +405,33 @@
                         <!-- AT A GLANCE -->
                         <div class="mt-auto pt-4">
                             <hr class="mt-0 mb-3">
-                            <div class="fw-bold small text-uppercase mb-2" style="color: #64748B; letter-spacing: .04em;">At a Glance</div>
-                            {% if session.get('role') == 'employee' %}
-                            {% set g_vl = user.vl_balance if user.vl_balance is defined and user.vl_balance is not none else 15 %}
-                            {% set g_sl = user.sl_balance if user.sl_balance is defined and user.sl_balance is not none else 15 %}
-                            {% set g_el = user.el_balance if user.el_balance is defined and user.el_balance is not none else 5 %}
                             <div class="row g-3 mb-3">
-                                <div class="col-4"><div class="glance-tile" style="border-color:#0EA5E9;"><i class="bi bi-brightness-high" style="color:#0EA5E9;"></i><div class="glance-num">{{ '%g'|format(g_vl|float) }}</div><div class="glance-lbl">Vacation Leave</div></div></div>
-                                <div class="col-4"><div class="glance-tile" style="border-color:#22C55E;"><i class="bi bi-heart-pulse" style="color:#22C55E;"></i><div class="glance-num">{{ '%g'|format(g_sl|float) }}</div><div class="glance-lbl">Sick Leave</div></div></div>
-                                <div class="col-4"><div class="glance-tile" style="border-color:#F59E0B;"><i class="bi bi-exclamation-triangle" style="color:#F59E0B;"></i><div class="glance-num">{{ '%g'|format(g_el|float) }}</div><div class="glance-lbl">Emergency Leave</div></div></div>
+                                <div class="col-md-6">
+                                    <div class="mvv-card" style="border-top-color:#0EA5E9;">
+                                        <div class="mvv-title"><i class="bi bi-bullseye" style="color:#0EA5E9;"></i> Our Mission</div>
+                                        <p class="mvv-text">To deliver accurate, timely, and transparent payroll and HR services that empower every employee and help the company run with confidence.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mvv-card" style="border-top-color:#22C55E;">
+                                        <div class="mvv-title"><i class="bi bi-eye" style="color:#22C55E;"></i> Our Vision</div>
+                                        <p class="mvv-text">To be a trusted leader in workforce and payments solutions, where every person is paid right, on time, and treated with respect.</p>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mvv-card" style="border-top-color:#F59E0B;">
+                                        <div class="mvv-title"><i class="bi bi-stars" style="color:#F59E0B;"></i> Our Core Values</div>
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            <span class="value-chip"><i class="bi bi-shield-check"></i> Integrity</span>
+                                            <span class="value-chip"><i class="bi bi-check2-circle"></i> Accuracy</span>
+                                            <span class="value-chip"><i class="bi bi-award"></i> Excellence</span>
+                                            <span class="value-chip"><i class="bi bi-person-check"></i> Accountability</span>
+                                            <span class="value-chip"><i class="bi bi-people"></i> Teamwork</span>
+                                            <span class="value-chip"><i class="bi bi-heart"></i> Respect</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            {% else %}
-                            <div class="row g-3 mb-3">
-                                <div class="col-4"><div class="glance-tile" style="border-color:#0EA5E9;"><i class="bi bi-people" style="color:#0EA5E9;"></i><div class="glance-num">{{ total_employees }}</div><div class="glance-lbl">Employees</div></div></div>
-                                <div class="col-4"><div class="glance-tile" style="border-color:#F59E0B;"><i class="bi bi-hourglass-split" style="color:#F59E0B;"></i><div class="glance-num">{{ pending_leaves_count }}</div><div class="glance-lbl">Pending Leaves</div></div></div>
-                                <div class="col-4"><div class="glance-tile" style="border-color:#22C55E;"><i class="bi bi-cash-stack" style="color:#22C55E;"></i><div class="glance-num" style="font-size:1.05rem;">₱{{ "{:,.2f}".format((total_payroll or 0)|float) }}</div><div class="glance-lbl">Total Net Payroll</div></div></div>
-                            </div>
-                            {% endif %}
 
                             <!-- CURRENT CUT-OFF -->
                             <div class="p-3 rounded-3 mb-3" style="background:#F8FAFC; border:1px solid #E2E8F0;">
