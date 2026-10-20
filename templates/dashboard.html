@@ -733,9 +733,11 @@
                 const btnAll = document.getElementById('btnAllCutoff');
                 const myWrap = document.getElementById('myCutoffWrap');
                 const allWrap = document.getElementById('allCutoffWrap');
+                const loansWrap = document.getElementById('myLoansWrap');
                 if (!btnMy || !btnAll) return;
                 function showCutoff(showAll) {
                     myWrap.classList.toggle('d-none', showAll);
+                    if (loansWrap) loansWrap.classList.toggle('d-none', showAll);
                     allWrap.classList.toggle('d-none', !showAll);
                     btnMy.classList.toggle('btn-primary', !showAll);
                     btnMy.classList.toggle('btn-outline-primary', showAll);
@@ -748,6 +750,7 @@
             </script>
             {% endif %}
 
+            <div id="myLoansWrap">
             <div class="row g-4">
                 <div class="col-lg-5">
                     <form action="{{ url_for('apply_loan') }}" method="POST" class="border p-4 rounded bg-light shadow-sm">
@@ -780,7 +783,7 @@
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm text-center align-middle">
                             <thead class="table-light">
-                                <tr><th>Type</th><th>Amount</th><th>Monthly</th><th>Status</th></tr>
+                                <tr><th>Type</th><th>Amount</th><th>Monthly</th><th>Status</th><th>Action</th></tr>
                             </thead>
                             <tbody>
                                 {% for loan in my_loans %}
@@ -789,14 +792,24 @@
                                     <td>₱{{ loan.amount }}</td>
                                     <td>₱{{ loan.monthly_amortization }}</td>
                                     <td><span class="badge bg-info text-dark">{{ loan.status }}</span></td>
+                                    <td>
+                                        {% if loan.status == 'Pending' %}
+                                        <form action="{{ url_for('cancel_loan', id=loan.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this loan request?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm py-0"><i class="bi bi-x-circle me-1"></i>Undo</button>
+                                        </form>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% else %}
-                                <tr><td colspan="4" class="text-muted py-3">No loan records found.</td></tr>
+                                <tr><td colspan="5" class="text-muted py-3">No loan records found.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
 

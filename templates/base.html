@@ -29,6 +29,14 @@
             opacity: 0.85;
             color: #ffffff;
         }
+        .nav-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffffff;
+            background: #ffffff;
+        }
         .role-badge-enclosed {
             font-size: 0.85rem;
             font-weight: 400;
@@ -68,7 +76,11 @@
             <div class="d-flex align-items-center">
                 {% if session.get('user_id') %}
                 <a href="/profile" class="user-profile-btn d-flex align-items-center me-3">
+                    {% if nav_profile_pic %}
+                    <img src="{{ nav_profile_pic }}" alt="Profile" class="nav-avatar me-2">
+                    {% else %}
                     <i class="bi bi-person-circle fs-5 me-2"></i>
+                    {% endif %}
                     <span class="fw-semibold">
                         {{ user.fullname if user and user.fullname else session.get('fullname', 'Employee Profile') }}
                     </span>

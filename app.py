@@ -213,6 +213,29 @@ def compute_payroll_results(cur, employees, start=None, end=None):
         })
     return payroll_results
 
+def find_profile_pic_filename(user_id):
+    """Hanapin ang latest na uploaded profile photo ng user (user_<id>.<ext>)."""
+    best, best_mtime = None, -1
+    for ext in ALLOWED_EXTENSIONS:
+        fname = f"user_{user_id}.{ext}"
+        path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+        if os.path.exists(path):
+            m = os.path.getmtime(path)
+            if m > best_mtime:
+                best, best_mtime = fname, m
+    return best, best_mtime
+
+@app.context_processor
+def inject_nav_profile_pic():
+    """Available sa lahat ng template bilang {{ nav_profile_pic }} (None kung wala pang photo)."""
+    uid = session.get('user_id')
+    if not uid:
+        return {'nav_profile_pic': None}
+    fname, mtime = find_profile_pic_filename(uid)
+    if not fname:
+        return {'nav_profile_pic': None}
+    return {'nav_profile_pic': url_for('static', filename=f"uploads/profile/{fname}", v=int(mtime))}
+
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -759,6 +782,32 @@ def apply_loan():
 
     return redirect('/dashboard?tab=loans')
 
+@app.route('/loan/cancel/<int:id>', methods=['POST'])
+def cancel_loan(id):
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            # Sariling loan lang, at Pending pa lang ang puwedeng i-cancel
+            cur.execute(
+                "DELETE FROM loan_applications WHERE id = %s AND user_id = %s AND status = 'Pending'",
+                (id, session['user_id'])
+            )
+            deleted = cur.rowcount
+            db.commit()
+        if deleted:
+            flash('Loan request cancelled.', 'success')
+        else:
+            flash('Only your own pending loan requests can be cancelled.', 'warning')
+    except Exception as e:
+        db.rollback()
+        print("Cancel Loan Error:", e)
+        flash('Failed to cancel loan request.', 'danger')
+
+    return redirect('/dashboard?tab=loans')
+
 @app.route('/admin/lock_payroll', methods=['POST'])
 def lock_payroll():
     if session.get('role') not in HR_ROLES:
@@ -869,6 +918,10 @@ def profile():
                 ext = file.filename.rsplit('.', 1)[1].lower()
                 filename = f"user_{session['user_id']}.{ext}"
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                for other in ALLOWED_EXTENSIONS - {ext}:
+                    old_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{session['user_id']}.{other}")
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
                 file.save(filepath)
                 hris.update_profile_pic(session['user_id'], filename)
                 flash('Profile photo updated!', 'success')
