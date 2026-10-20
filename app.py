@@ -11,7 +11,7 @@ import random
 import requests
 import threading
 import time
-from datetime import datetime, date
+from datetime import datetime, date, timedelta, time as dt_time
 import json
 import calendar
 
@@ -172,6 +172,40 @@ def _log_date(log):
     except Exception:
         return None
 
+# --- OVERTIME SETTINGS (puwedeng baguhin) ---
+OT_RATE_MULTIPLIER = 1.25     # 125% ng hourly rate (regular working day OT)
+OT_MIN_MINUTES = 30           # OT na mas mababa dito ay hindi binibilang
+OT_MAX_HOURS_PER_DAY = 4.0    # limit kada log, para hindi sumabog kapag nakalimutang mag clock-out
+
+def _to_time(v):
+    if isinstance(v, datetime):
+        return v.time()
+    if isinstance(v, dt_time):
+        return v
+    try:
+        return datetime.strptime(str(v)[:5], '%H:%M').time()
+    except Exception:
+        return None
+
+def calc_overtime_hours(log, shift_start, shift_end):
+    """OT hours = oras ng clock-out na lampas sa shift_end ng employee (suportado ang night shift)."""
+    clock_in = log.get('clock_in')
+    clock_out = log.get('clock_out')
+    if not isinstance(clock_in, datetime) or not isinstance(clock_out, datetime):
+        return 0.0
+    s = _to_time(shift_start) or dt_time(9, 0)
+    e = _to_time(shift_end) or dt_time(18, 0)
+    start_dt = datetime.combine(clock_in.date(), s)
+    end_dt = datetime.combine(clock_in.date(), e)
+    if end_dt <= start_dt:
+        end_dt += timedelta(days=1)
+    if clock_out.tzinfo is not None:
+        end_dt = end_dt.replace(tzinfo=clock_out.tzinfo)
+    ot_minutes = (clock_out - end_dt).total_seconds() / 60.0
+    if ot_minutes < OT_MIN_MINUTES:
+        return 0.0
+    return round(min(ot_minutes / 60.0, OT_MAX_HOURS_PER_DAY), 2)
+
 def compute_payroll_results(cur, employees, start=None, end=None):
     payroll_results = []
     for emp in employees:
@@ -193,7 +227,9 @@ def compute_payroll_results(cur, employees, start=None, end=None):
         days_worked = len({_log_date(l) for l in logs if _log_date(l)})
         basic_pay = days_worked * daily_rate
         night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
-        gross_pay = basic_pay + night_diff_pay
+        overtime_hours = round(sum(calc_overtime_hours(l, emp.get('shift_start'), emp.get('shift_end')) for l in logs), 2)
+        overtime_pay = round(overtime_hours * hourly_rate * OT_RATE_MULTIPLIER, 2)
+        gross_pay = basic_pay + night_diff_pay + overtime_pay
         est_monthly = daily_rate * 22
         pagibig = 100.00 if gross_pay > 0 else 0.00
         philhealth = ((est_monthly * 0.025) / 2) if gross_pay > 0 else 0.00
@@ -207,6 +243,8 @@ def compute_payroll_results(cur, employees, start=None, end=None):
             'department': emp.get('department', 'Operations'),
             'days_worked': days_worked,
             'basic_pay': basic_pay,
+            'overtime_hours': overtime_hours,
+            'overtime_pay': overtime_pay,
             'gross_pay': gross_pay,
             'deductions': total_deductions,
             'net_pay': net_pay
@@ -651,12 +689,27 @@ def reports():
         print("Reports Route Detailed Error:", e)
         target_user = current_user
 
+    # Overtime kada employee (ginagamit ng Payslip at Master Payroll Register)
+    ot_by_user = {}
+    for emp in (employees or ([current_user] if current_user else [])):
+        emp_hourly = float(emp.get('daily_rate') or 1000.0) / 8.0
+        emp_ot_hours = round(sum(
+            calc_overtime_hours(t, emp.get('shift_start'), emp.get('shift_end'))
+            for t in timekeeping_records
+            if t.get('user_id') == emp.get('id') and t.get('clock_out')
+        ), 2)
+        ot_by_user[emp.get('id')] = {
+            'hours': emp_ot_hours,
+            'pay': round(emp_ot_hours * emp_hourly * OT_RATE_MULTIPLIER, 2)
+        }
+
     return render_template(
         'reports.html',
         user=current_user,
         target_user=target_user,
         employees=employees,
         timekeeping_records=timekeeping_records,
+        ot_by_user=ot_by_user,
         is_hr=is_hr
     )
 

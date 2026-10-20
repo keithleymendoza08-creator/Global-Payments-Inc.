@@ -9,6 +9,7 @@
 {% set is_hr = is_hr if is_hr is defined else (user.role != 'employee') %}
 {% set employees = employees if employees is defined and employees else [] %}
 {% set timekeeping_records = timekeeping_records if timekeeping_records is defined and timekeeping_records else [] %}
+{% set ot_by_user = ot_by_user if ot_by_user is defined and ot_by_user else {} %}
 {% set daily = (user.daily_rate|float(1000.0)) if user and user.daily_rate else 1000.0 %}
 
 {# Bilangin ang actual completed time-in/clock-out records #}
@@ -22,7 +23,11 @@
 {% endif %}
 
 {% set total_hours = completed_days.count * 8.0 %}
-{% set gross_cutoff = completed_days.count * daily %}
+{% set my_ot = ot_by_user.get(user.id, {}) %}
+{% set ot_hours = my_ot.hours|default(0.0)|float %}
+{% set ot_pay = my_ot.pay|default(0.0)|float %}
+{% set base_pay = completed_days.count * daily %}
+{% set gross_cutoff = base_pay + ot_pay %}
 {% set est_monthly = daily * 22 %}
 
 {# Dynamic Statutory Deductions (May bawas lang kapag may gross earnings) #}
@@ -470,7 +475,7 @@
                                     <tr>
                                         <td style="padding: 2px 6px;">Regular Base Pay ({{ completed_days.count }} Days)</td>
                                         <td style="padding: 2px 6px;" class="text-end">{{ "{:,.2f}".format(total_hours|float) }}</td>
-                                        <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(gross_cutoff|float) }}</td>
+                                        <td style="padding: 2px 6px;" class="text-end fw-bold">₱ {{ "{:,.2f}".format(base_pay|float) }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">Meal Allowance Non Taxable</td>
@@ -484,8 +489,8 @@
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">Regular OT</td>
-                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
-                                        <td style="padding: 2px 6px;" class="text-end">0.00</td>
+                                        <td style="padding: 2px 6px;" class="text-end">{{ "{:,.2f}".format(ot_hours|float) }}</td>
+                                        <td style="padding: 2px 6px;" class="text-end">₱ {{ "{:,.2f}".format(ot_pay|float) }}</td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 2px 6px;">Night Differential</td>
@@ -822,7 +827,7 @@
                                     {% endif %}
 
                                     {% set emp_basic = (emp_completed_days.count|float) * (emp_daily|float) %}
-                                    {% set emp_ot = 0.00 %}
+                                    {% set emp_ot = ot_by_user.get(emp.id, {}).pay|default(0.0) %}
                                     
                                     {% set emp_est_monthly = (emp_daily|float) * 22 %}
                                     {% set emp_pagibig = 100.00 if emp_basic > 0 else 0.00 %}
