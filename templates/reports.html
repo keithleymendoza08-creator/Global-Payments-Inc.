@@ -4,7 +4,12 @@
 
 {% block content %}
 <!-- DYNAMIC COMPUTATION BASED ON ACTUAL COMPLETED TIMEKEEPING LOGS -->
-{% set daily = user.daily_rate if user and user.daily_rate else 1000.0 %}
+{# Safe defaults: iwas UndefinedError kapag hindi pinasa ng route ang mga variable na ito #}
+{% set target_user = target_user if (target_user is defined and target_user) else user %}
+{% set is_hr = is_hr if is_hr is defined else (user.role != 'employee') %}
+{% set employees = employees if employees is defined and employees else [] %}
+{% set timekeeping_records = timekeeping_records if timekeeping_records is defined and timekeeping_records else [] %}
+{% set daily = (user.daily_rate|float(1000.0)) if user and user.daily_rate else 1000.0 %}
 
 {# Bilangin ang actual completed time-in/clock-out records #}
 {% set completed_days = namespace(count=0) %}
