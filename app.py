@@ -595,11 +595,13 @@ def dashboard():
 def reports():
     if 'user_id' not in session:
         return redirect('/login')
-    
+
+    is_hr = session.get('role') in HR_ROLES
     db = get_db()
-    timekeeping_records = []
     employees = []
+    timekeeping_records = []
     current_user = None
+    target_user = None
 
     try:
         with db.cursor() as cur:
@@ -618,25 +620,44 @@ def reports():
                     'daily_rate': 3500
                 }
 
-            cur.execute("SELECT * FROM users ORDER BY id DESC")
-            employees = cur.fetchall() or []
-
-            cur.execute("""
-                SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
-                FROM timekeeping t
-                JOIN users u ON u.id=t.user_id
-                ORDER BY t.clock_in DESC
-            """)
+            if is_hr:
+                # HR: lahat ng employees + lahat ng records; puwedeng pumili ng employee para sa DTR
+                cur.execute("SELECT * FROM users ORDER BY fullname")
+                employees = cur.fetchall() or []
+                target_id = request.args.get('user_id', type=int) or session['user_id']
+                cur.execute("""
+                    SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start
+                    FROM timekeeping t
+                    JOIN users u ON u.id=t.user_id
+                    ORDER BY t.clock_in DESC
+                """)
+            else:
+                # Employee: sarili lang, filtered na mismo sa server
+                employees = [current_user]
+                target_id = session['user_id']
+                cur.execute("""
+                    SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start
+                    FROM timekeeping t
+                    JOIN users u ON u.id=t.user_id
+                    WHERE t.user_id = %s
+                    ORDER BY t.clock_in DESC
+                """, (session['user_id'],))
             timekeeping_records = cur.fetchall() or []
 
+            target_user = next((e for e in employees if e.get('id') == target_id), current_user)
+
     except Exception as e:
+        db.rollback()
         print("Reports Route Detailed Error:", e)
+        target_user = current_user
 
     return render_template(
-        'reports.html', 
+        'reports.html',
         user=current_user,
+        target_user=target_user,
         employees=employees,
-        timekeeping_records=timekeeping_records
+        timekeeping_records=timekeeping_records,
+        is_hr=is_hr
     )
 
 @app.route('/admin/assign_shift', methods=['POST'])

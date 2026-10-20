@@ -213,6 +213,16 @@
                         </div>
                     </div>
                     <p class="text-muted small mb-3">Official record of daily shift timestamps and tardiness logs.</p>
+                    {% if is_hr %}
+                    <form method="get" class="mb-3">
+                        <label class="form-label small fw-semibold mb-1">Employee DTR</label>
+                        <select name="user_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                            {% for e in employees %}
+                            <option value="{{ e.id }}" {% if e.id == target_user.id %}selected{% endif %}>{{ e.fullname }}{% if e.employee_id %} ({{ e.employee_id }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    {% endif %}
                 </div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-danger btn-sm rounded-2 flex-grow-1 fw-semibold" data-bs-toggle="modal" data-bs-target="#viewDTRModal">
@@ -675,12 +685,12 @@
 
                     <table style="width: 100%; margin-bottom: 15px; font-size: 0.82rem; background: #F8FAFC; padding: 12px; border-radius: 6px; border: 1px solid #E2E8F0;">
                         <tr>
-                            <td style="border: none; padding: 4px; width: 50%;"><strong>Employee Name:</strong> {{ user.fullname }}</td>
-                            <td style="border: none; padding: 4px; width: 50%;"><strong>Employee ID:</strong> {{ user.employee_id if user.employee_id else 'GP-2026-001' }}</td>
+                            <td style="border: none; padding: 4px; width: 50%;"><strong>Employee Name:</strong> {{ target_user.fullname }}</td>
+                            <td style="border: none; padding: 4px; width: 50%;"><strong>Employee ID:</strong> {{ target_user.employee_id if target_user.employee_id else 'GP-2026-001' }}</td>
                         </tr>
                         <tr>
-                            <td style="border: none; padding: 4px;"><strong>Department:</strong> {{ user.department if user.department else 'Operations' }}</td>
-                            <td style="border: none; padding: 4px;"><strong>Shift Schedule:</strong> 09:00 AM - 06:00 PM</td>
+                            <td style="border: none; padding: 4px;"><strong>Department:</strong> {{ target_user.department if target_user.department else 'Operations' }}</td>
+                            <td style="border: none; padding: 4px;"><strong>Shift Schedule:</strong> {{ target_user.shift_start if target_user.shift_start else '09:00' }} - {{ target_user.shift_end if target_user.shift_end else '18:00' }}</td>
                         </tr>
                     </table>
 
@@ -698,7 +708,7 @@
                         <tbody>
                             {% if timekeeping_records %}
                                 {% for t in timekeeping_records %}
-                                {% if t.user_id == user.id %}
+                                {% if t.user_id == target_user.id %}
                                 <tr>
                                     <td>{{ t.lob if t.lob else 'Cubao QC' }}</td>
                                     <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
@@ -730,7 +740,7 @@
                         </div>
                         <div class="col-6 text-center">
                             <p class="mb-4 text-muted small">Employee Acknowledgment:</p>
-                            <p class="fw-bold border-bottom pb-1 mb-1">{{ user.fullname }}</p>
+                            <p class="fw-bold border-bottom pb-1 mb-1">{{ target_user.fullname }}</p>
                             <p class="text-muted small">Signature over Printed Name</p>
                         </div>
                     </div>
