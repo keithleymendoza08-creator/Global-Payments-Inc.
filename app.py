@@ -948,6 +948,33 @@ def approve_leave(id):
     flash(msg, 'success' if ok else 'danger')
     return redirect('/dashboard?tab=approvals')
 
+@app.route('/admin/reject_leave/<int:id>', methods=['POST'])
+def reject_leave(id):
+    if session.get('role') not in HR_ROLES:
+        flash('Unauthorized access for leave rejection.', 'danger')
+        return redirect('/dashboard')
+
+    db = get_db()
+    try:
+        with db.cursor() as cur:
+            # Pending lang ang puwedeng i-reject
+            cur.execute(
+                "UPDATE leave_applications SET status = 'Rejected' WHERE id = %s AND status = 'Pending'",
+                (id,)
+            )
+            updated = cur.rowcount
+            db.commit()
+        if updated:
+            flash('Leave application has been rejected.', 'success')
+        else:
+            flash('Only pending leave applications can be rejected.', 'warning')
+    except Exception as e:
+        db.rollback()
+        print("Reject Leave Error:", e)
+        flash('Failed to reject leave application.', 'danger')
+
+    return redirect('/dashboard?tab=approvals')
+
 @app.route('/export_payroll_csv')
 def export_payroll_csv():
     if 'user_id' not in session:

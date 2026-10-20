@@ -642,7 +642,7 @@
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm text-center align-middle">
                             <thead class="table-light">
-                                <tr><th>Type</th><th>Dates</th><th>Reason</th><th>Status</th></tr>
+                                <tr><th>Type</th><th>Dates</th><th>Reason</th><th>Status</th><th>Action</th></tr>
                             </thead>
                             <tbody>
                                 {% for l in my_leaves %}
@@ -650,10 +650,27 @@
                                     <td>{{ l.leave_type }}</td>
                                     <td>{{ l.start_date }} to {{ l.end_date }}</td>
                                     <td>{{ l.reason }}</td>
-                                    <td><span class="badge bg-warning text-dark">{{ l.status }}</span></td>
+                                    <td>
+                                        {% if l.status == 'Approved' %}
+                                        <span class="badge bg-success">{{ l.status }}</span>
+                                        {% elif l.status == 'Rejected' %}
+                                        <span class="badge bg-danger">{{ l.status }}</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">{{ l.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if l.status == 'Pending' %}
+                                        <form action="{{ url_for('delete_leave', id=l.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this leave request?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm py-0"><i class="bi bi-trash me-1"></i>Delete</button>
+                                        </form>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% else %}
-                                <tr><td colspan="4" class="text-muted py-3">No leave applications found.</td></tr>
+                                <tr><td colspan="5" class="text-muted py-3">No leave applications found.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -831,6 +848,9 @@
                             <td>{{ p.start_date }} to {{ p.end_date }}</td>
                             <td>
                                 <a href="{{ url_for('approve_leave', id=p.id) }}" class="btn btn-success btn-sm py-0 px-3 fw-bold">Approve</a>
+                                <form action="{{ url_for('reject_leave', id=p.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Reject this leave request?');">
+                                    <button type="submit" class="btn btn-danger btn-sm py-0 px-3 fw-bold">Reject</button>
+                                </form>
                             </td>
                         </tr>
                         {% else %}
