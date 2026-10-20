@@ -189,7 +189,8 @@ def compute_payroll_results(cur, employees, start=None, end=None):
         if start and end:
             logs = [l for l in logs if _log_date(l) and start <= _log_date(l) <= end]
 
-        days_worked = len(logs)
+        # Isang araw = isang bilang, kahit ilang beses nag clock in/out sa araw na iyon
+        days_worked = len({_log_date(l) for l in logs if _log_date(l)})
         basic_pay = days_worked * daily_rate
         night_diff_pay = days_worked * (hourly_rate * 0.10 * 2)
         gross_pay = basic_pay + night_diff_pay
@@ -494,6 +495,9 @@ def dashboard():
             """, (session['user_id'],))
             timekeeping_records = cur.fetchall() or []
 
+            # Clock status ng naka-login na user (para sa Clock IN/OUT modal)
+            open_clock = get_open_clock_record(cur, session['user_id'])
+
             # Records ng lahat ng employees (HR lang)
             all_timekeeping_records = []
             if session.get('role') in HR_ROLES:
@@ -515,6 +519,7 @@ def dashboard():
             timekeeping_records=timekeeping_records, 
             all_timekeeping_records=all_timekeeping_records,
             is_hr=(session.get('role') in HR_ROLES),
+            open_clock=open_clock,
             total_employees=total_employees, 
             pending_leaves_count=pending_leaves_count, 
             total_payroll=total_payroll, 
@@ -547,6 +552,7 @@ def dashboard():
             timekeeping_records=[], 
             all_timekeeping_records=[],
             is_hr=(session.get('role') in HR_ROLES),
+            open_clock=None,
             total_employees=0, 
             pending_leaves_count=0, 
             total_payroll=0.0, 
@@ -640,18 +646,51 @@ def assign_shift():
 
     return redirect('/dashboard')
 
+def get_open_clock_record(cur, user_id):
+    """Latest record na wala pang clock_out (ibig sabihin, naka clock-in pa)."""
+    cur.execute("""
+        SELECT * FROM timekeeping
+        WHERE user_id = %s AND clock_out IS NULL
+        ORDER BY clock_in DESC LIMIT 1
+    """, (user_id,))
+    return cur.fetchone()
+
 @app.route('/timekeeping', methods=['GET', 'POST'])
 def timekeeping():
     if 'user_id' not in session:
         return redirect('/login')
     if request.method == 'POST':
         action_type = request.form.get('action')
-        if action_type == 'time_in':
-            hris.record_time_in(session['user_id'])
-            flash('Successfully Clocked In!', 'success')
-        elif action_type == 'time_out':
-            hris.record_time_out(session['user_id'])
-            flash('Successfully Clocked Out!', 'success')
+        db = get_db()
+        try:
+            with db.cursor() as cur:
+                open_rec = get_open_clock_record(cur, session['user_id'])
+
+                if action_type == 'time_in':
+                    if open_rec:
+                        flash('You are already clocked in. Please clock out first.', 'warning')
+                    else:
+                        cur.execute(
+                            "INSERT INTO timekeeping (user_id, clock_in) VALUES (%s, NOW())",
+                            (session['user_id'],)
+                        )
+                        db.commit()
+                        flash('Successfully Clocked In!', 'success')
+
+                elif action_type == 'time_out':
+                    if not open_rec:
+                        flash('You have no active clock-in. Please clock in first.', 'warning')
+                    else:
+                        cur.execute(
+                            "UPDATE timekeeping SET clock_out = NOW() WHERE id = %s",
+                            (open_rec['id'],)
+                        )
+                        db.commit()
+                        flash('Successfully Clocked Out!', 'success')
+        except Exception as e:
+            db.rollback()
+            print("Timekeeping Error:", e)
+            flash('Could not record your attendance. Please try again.', 'danger')
         return redirect('/dashboard')
 
     db = get_db()

@@ -673,7 +673,13 @@
             {% set d_pagibig = 100.0 %}
             {% set d_total = d_sss + d_phil + d_pagibig %}
             {% set semi_gross = monthly / 2 %}
-            <div class="calendar-card mb-4">
+            {% if is_hr %}
+            <div class="btn-group mb-3" role="group" aria-label="Payroll cut-off view">
+                <button type="button" class="btn btn-primary btn-sm" id="btnMyCutoff"><i class="bi bi-person me-1"></i>My Cut-Off</button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="btnAllCutoff"><i class="bi bi-people me-1"></i>All Employees</button>
+            </div>
+            {% endif %}
+            <div class="calendar-card mb-4" id="myCutoffWrap">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                     <div>
                         <h6 class="fw-bold mb-0" style="color: var(--gp-navy);"><i class="bi bi-receipt me-2"></i>Pre-Tax Deductions (per Cut-Off)</h6>
@@ -689,10 +695,13 @@
                 </div>
                 <div class="small text-muted mt-3">Taxable income after pre-tax deductions: <strong style="color: var(--gp-navy);">₱{{ "{:,.2f}".format(semi_gross - d_total) }}</strong> per cut-off</div>
 
-                {% if session.get('role') != 'employee' and employees %}
-                <hr>
-                <div class="small fw-bold mb-2" style="color: var(--gp-navy);">All Employees</div>
-                <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
+            </div>
+
+            {% if is_hr %}
+            <!-- HR ONLY: all employees cut-off (hidden until toggled) -->
+            <div class="calendar-card mb-4 d-none" id="allCutoffWrap">
+                <div class="small fw-bold mb-2" style="color: var(--gp-navy);">All Employees - Pre-Tax Deductions (per Cut-Off)</div>
+                <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
                     <table class="table table-bordered table-sm text-center align-middle mb-0">
                         <thead class="table-light">
                             <tr><th>Employee</th><th>Daily Rate</th><th>SSS</th><th>PhilHealth</th><th>Pag-IBIG</th><th>Total Pre-Tax</th></tr>
@@ -711,12 +720,33 @@
                                 <td>₱100.00</td>
                                 <td class="fw-bold text-danger">₱{{ "{:,.2f}".format(e_sss + e_phil + 100) }}</td>
                             </tr>
+                            {% else %}
+                            <tr><td colspan="6" class="text-muted py-3">No employees found.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                {% endif %}
             </div>
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const btnMy = document.getElementById('btnMyCutoff');
+                const btnAll = document.getElementById('btnAllCutoff');
+                const myWrap = document.getElementById('myCutoffWrap');
+                const allWrap = document.getElementById('allCutoffWrap');
+                if (!btnMy || !btnAll) return;
+                function showCutoff(showAll) {
+                    myWrap.classList.toggle('d-none', showAll);
+                    allWrap.classList.toggle('d-none', !showAll);
+                    btnMy.classList.toggle('btn-primary', !showAll);
+                    btnMy.classList.toggle('btn-outline-primary', showAll);
+                    btnAll.classList.toggle('btn-primary', showAll);
+                    btnAll.classList.toggle('btn-outline-primary', !showAll);
+                }
+                btnMy.addEventListener('click', () => showCutoff(false));
+                btnAll.addEventListener('click', () => showCutoff(true));
+            });
+            </script>
+            {% endif %}
 
             <div class="row g-4">
                 <div class="col-lg-5">
@@ -1068,12 +1098,26 @@
             </div>
             <form action="{{ url_for('timekeeping') }}" method="POST">
                 <div class="modal-body text-center p-4">
-                    <p class="text-muted">Record your shift attendance timestamps below.</p>
+                    <div class="mb-1 fw-bold" id="liveClock" style="font-size: 2rem; color: var(--gp-navy);">--:--:--</div>
+                    <div class="small text-muted mb-3" id="liveDate"></div>
+
+                    {% if open_clock %}
+                    <div class="alert alert-success py-2 small mb-3">
+                        <i class="bi bi-check-circle me-1"></i><strong>You are clocked IN</strong><br>
+                        Since {{ open_clock.clock_in.strftime('%b %d, %Y %I:%M %p') if open_clock.clock_in.strftime is defined else open_clock.clock_in }}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-secondary py-2 small mb-3">
+                        <i class="bi bi-dash-circle me-1"></i><strong>You are clocked OUT</strong><br>
+                        Click Clock IN to start your shift.
+                    </div>
+                    {% endif %}
+
                     <div class="d-grid gap-3 col-10 mx-auto">
-                        <button type="submit" name="action" value="time_in" class="btn btn-success btn-lg rounded-3 fw-bold">
+                        <button type="submit" name="action" value="time_in" class="btn btn-success btn-lg rounded-3 fw-bold" {% if open_clock %}disabled{% endif %}>
                             <i class="bi bi-box-arrow-in-right me-2"></i>Clock IN
                         </button>
-                        <button type="submit" name="action" value="time_out" class="btn btn-danger btn-lg rounded-3 fw-bold">
+                        <button type="submit" name="action" value="time_out" class="btn btn-danger btn-lg rounded-3 fw-bold" {% if not open_clock %}disabled{% endif %}>
                             <i class="bi bi-box-arrow-right me-2"></i>Clock OUT
                         </button>
                     </div>
@@ -1082,6 +1126,18 @@
         </div>
     </div>
 </div>
+<script>
+(function () {
+    function tick() {
+        const n = new Date();
+        const c = document.getElementById('liveClock');
+        const d = document.getElementById('liveDate');
+        if (c) c.textContent = n.toLocaleTimeString('en-PH');
+        if (d) d.textContent = n.toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    tick(); setInterval(tick, 1000);
+})();
+</script>
 
 <div class="modal fade" id="tardinessModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -1113,7 +1169,8 @@
                                 <th>Employee ID</th>
                                 <th>Name</th>
                                 <th>Shift Start</th>
-                                <th>Login Timestamp</th>
+                                <th>Clock In</th>
+                                <th>Clock Out</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -1125,13 +1182,14 @@
                                     <td>{{ t.employee_id if t.employee_id else 'N/A' }}</td>
                                     <td class="fw-semibold">{{ t.fullname }}</td>
                                     <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
-                                    <td class="text-danger fw-bold">{{ t.clock_in }}</td>
-                                    <td><span class="badge bg-danger">LOGGED</span></td>
+                                    <td class="fw-bold">{{ t.clock_in }}</td>
+                                    <td class="fw-bold">{{ t.clock_out if t.clock_out else '-' }}</td>
+                                    <td>{% if t.clock_out %}<span class="badge bg-secondary">COMPLETED</span>{% else %}<span class="badge bg-success">ON DUTY</span>{% endif %}</td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">No attendance records found.</td>
+                                    <td colspan="7" class="text-center text-muted py-4">No attendance records found.</td>
                                 </tr>
                             {% endif %}
                         </tbody>
@@ -1148,7 +1206,8 @@
                                 <th>Employee ID</th>
                                 <th>Name</th>
                                 <th>Shift Start</th>
-                                <th>Login Timestamp</th>
+                                <th>Clock In</th>
+                                <th>Clock Out</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -1160,13 +1219,14 @@
                                     <td>{{ t.employee_id if t.employee_id else 'N/A' }}</td>
                                     <td class="fw-semibold">{{ t.fullname }}</td>
                                     <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
-                                    <td class="text-danger fw-bold">{{ t.clock_in }}</td>
-                                    <td><span class="badge bg-danger">LOGGED</span></td>
+                                    <td class="fw-bold">{{ t.clock_in }}</td>
+                                    <td class="fw-bold">{{ t.clock_out if t.clock_out else '-' }}</td>
+                                    <td>{% if t.clock_out %}<span class="badge bg-secondary">COMPLETED</span>{% else %}<span class="badge bg-success">ON DUTY</span>{% endif %}</td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">No attendance records found.</td>
+                                    <td colspan="7" class="text-center text-muted py-4">No attendance records found.</td>
                                 </tr>
                             {% endif %}
                         </tbody>
