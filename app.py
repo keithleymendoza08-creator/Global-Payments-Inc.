@@ -484,13 +484,26 @@ def dashboard():
                     except Exception:
                         pass
 
+            # Sariling records lang (para sa lahat ng user, pati HR)
             cur.execute("""
                 SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
                 FROM timekeeping t
                 JOIN users u ON u.id=t.user_id
+                WHERE t.user_id = %s
                 ORDER BY t.clock_in DESC LIMIT 20
-            """)
+            """, (session['user_id'],))
             timekeeping_records = cur.fetchall() or []
+
+            # Records ng lahat ng employees (HR lang)
+            all_timekeeping_records = []
+            if session.get('role') in HR_ROLES:
+                cur.execute("""
+                    SELECT t.*, u.fullname, u.department, u.employee_id, u.work_location as lob, u.shift_start 
+                    FROM timekeeping t
+                    JOIN users u ON u.id=t.user_id
+                    ORDER BY t.clock_in DESC LIMIT 50
+                """)
+                all_timekeeping_records = cur.fetchall() or []
 
         return render_template(
             'dashboard.html', 
@@ -500,6 +513,8 @@ def dashboard():
             my_loans=my_loans,
             pending_leaves=pending_leaves_list, 
             timekeeping_records=timekeeping_records, 
+            all_timekeeping_records=all_timekeeping_records,
+            is_hr=(session.get('role') in HR_ROLES),
             total_employees=total_employees, 
             pending_leaves_count=pending_leaves_count, 
             total_payroll=total_payroll, 
@@ -530,6 +545,8 @@ def dashboard():
             my_loans=[],
             pending_leaves=[], 
             timekeeping_records=[], 
+            all_timekeeping_records=[],
+            is_hr=(session.get('role') in HR_ROLES),
             total_employees=0, 
             pending_leaves_count=0, 
             total_payroll=0.0, 

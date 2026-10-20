@@ -1091,7 +1091,21 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="table-responsive">
+
+                {% if is_hr %}
+                <!-- HR ONLY: toggle between own ledger and all employees -->
+                <div class="btn-group mb-3" role="group" aria-label="Ledger view">
+                    <button type="button" class="btn btn-primary" id="btnMyLedger">
+                        <i class="bi bi-person me-1"></i>My Tardiness
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnAllLedger">
+                        <i class="bi bi-people me-1"></i>All Employees
+                    </button>
+                </div>
+                {% endif %}
+
+                <!-- MY LEDGER (default for everyone) -->
+                <div id="myLedgerWrap" class="table-responsive">
                     <table class="table table-hover align-middle border text-center">
                         <thead class="table-light">
                             <tr>
@@ -1123,6 +1137,68 @@
                         </tbody>
                     </table>
                 </div>
+
+                {% if is_hr %}
+                <!-- ALL EMPLOYEES LEDGER (HR ONLY, hidden until clicked) -->
+                <div id="allLedgerWrap" class="table-responsive d-none">
+                    <table class="table table-hover align-middle border text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>LOB</th>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Shift Start</th>
+                                <th>Login Timestamp</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if all_timekeeping_records %}
+                                {% for t in all_timekeeping_records %}
+                                <tr>
+                                    <td>{{ t.lob if t.lob else 'Cubao QC' }}</td>
+                                    <td>{{ t.employee_id if t.employee_id else 'N/A' }}</td>
+                                    <td class="fw-semibold">{{ t.fullname }}</td>
+                                    <td>{{ t.shift_start if t.shift_start else '09:00' }}</td>
+                                    <td class="text-danger fw-bold">{{ t.clock_in }}</td>
+                                    <td><span class="badge bg-danger">LOGGED</span></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No attendance records found.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const btnMy = document.getElementById('btnMyLedger');
+                    const btnAll = document.getElementById('btnAllLedger');
+                    const myWrap = document.getElementById('myLedgerWrap');
+                    const allWrap = document.getElementById('allLedgerWrap');
+                    if (!btnMy || !btnAll) return;
+
+                    function showLedger(showAll) {
+                        myWrap.classList.toggle('d-none', showAll);
+                        allWrap.classList.toggle('d-none', !showAll);
+                        btnMy.classList.toggle('btn-primary', !showAll);
+                        btnMy.classList.toggle('btn-outline-primary', showAll);
+                        btnAll.classList.toggle('btn-primary', showAll);
+                        btnAll.classList.toggle('btn-outline-primary', !showAll);
+                    }
+                    btnMy.addEventListener('click', function () { showLedger(false); });
+                    btnAll.addEventListener('click', function () { showLedger(true); });
+
+                    // Laging "My Tardiness" ang default pag binuksan ang modal
+                    const modalEl = document.getElementById('tardinessModal');
+                    if (modalEl) modalEl.addEventListener('show.bs.modal', function () { showLedger(false); });
+                });
+                </script>
+                {% endif %}
+
             </div>
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
